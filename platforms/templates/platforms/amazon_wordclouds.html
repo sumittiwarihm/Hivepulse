@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASIN Word Clouds</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        #wordcloud-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px; /* Space between wordclouds */
+        }
+        .wordcloud {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            height: 400px;
+            padding: 15px;
+            text-align: center;
+            overflow: hidden;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+        .word {
+            display: inline-block;
+            margin: 5px; /* Margin around each word */
+            transition: font-size 0.3s, color 0.3s;
+            cursor: pointer;
+            color: #333;
+        }
+        .word:hover {
+            color: #007bff; /* Change color on hover */
+            transform: scale(1.1); /* Slightly enlarge on hover */
+        }
+        #sentimentContent {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            background-color: #e9f7ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Clouds for ASINs</h1>
+
+    <div id="wordcloud-container">
+        <!-- Word clouds will be rendered here -->
+    </div>
+
+    <div id="sentimentContent">
+        <!-- Sentiment data will be displayed here -->
+    </div>
+
+    <script>
+        const asinWordclouds = JSON.parse('{{ asin_wordclouds|safe }}');
+        const asinWordcloudData = JSON.parse('{{ asin_wordcloud_data|safe }}');
+
+        const wordcloudContainer = document.getElementById('wordcloud-container');
+        const sentimentContent = document.getElementById('sentimentContent');
+
+        function createWordCloud(asin, words) {
+            const wordcloudDiv = document.createElement('div');
+            wordcloudDiv.className = 'wordcloud';
+            wordcloudDiv.id = 'wordcloud-' + asin;
+
+            const title = document.createElement('h2');
+            title.textContent = 'ASIN: ' + asin;
+            wordcloudDiv.appendChild(title);
+
+            const wordList = document.createElement('div');
+            wordList.style.fontSize = '20px'; // Base font size
+
+            if (Object.keys(words).length === 0) {
+                wordList.textContent = 'No words available for this ASIN.';
+            } else {
+                for (const [word, weight] of Object.entries(words)) {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.className = 'word';
+                    wordSpan.textContent = word;
+                    wordSpan.style.fontSize = (weight * 30) + 'px'; // Adjust scaling factor
+                    wordSpan.onclick = () => showSentimentData(word, asin);
+                    wordList.appendChild(wordSpan);
+                }
+            }
+
+            wordcloudDiv.appendChild(wordList);
+            wordcloudContainer.appendChild(wordcloudDiv);
+        }
+
+        function showSentimentData(word, asin) {
+            const reviews = asinWordcloudData[asin];
+            const wordSentiments = reviews.filter(review => review.cleaned_text.includes(word));
+
+            let positive = 0, neutral = 0, negative = 0;
+            const count = wordSentiments.length;
+
+            wordSentiments.forEach(review => {
+                positive += review.positiveScore;
+                neutral += review.neutralScore;
+                negative += review.negativeScore;
+            });
+
+            // Calculate averages
+            if (count > 0) {
+                positive /= count;
+                neutral /= count;
+                negative /= count;
+
+                sentimentContent.innerHTML = `
+                    <strong>Sentiment for "${word}" in ASIN ${asin}</strong>
+                    <p>Positive: ${positive.toFixed(2)}</p>
+                    <p>Neutral: ${neutral.toFixed(2)}</p>
+                    <p>Negative: ${negative.toFixed(2)}</p>
+                `;
+            } else {
+                sentimentContent.innerHTML = `No sentiment data available for "${word}" in ASIN ${asin}.`;
+            }
+        }
+
+        for (const asin in asinWordclouds) {
+            createWordCloud(asin, asinWordclouds[asin]);
+        }
+    </script>
+</body>
+</html>

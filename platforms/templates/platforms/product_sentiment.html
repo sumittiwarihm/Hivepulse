@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Sentiment Analysis</title>
+    <link rel="stylesheet" href="{% static 'css/sentimentResult.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Product Sentiment Analysis</h1>
+        <form method="POST" class="form-content">
+            {% csrf_token %}
+            <label for="platform">Select Platform:</label>
+            <select name="platform" id="platform" required onchange="showInputField(this.value)">
+                <option value="" selected disabled>Select a platform</option>
+                <option value="amazon">Amazon</option>
+                <option value="flipkart">Flipkart</option>
+                <option value="playstore">Playstore</option>
+            </select>
+
+            <div id="inputField" class="input-field">
+                <!-- Dynamic input field will appear here based on selection -->
+            </div>
+
+            <button type="submit">Get Sentiment Results</button>
+        </form>
+        <div class="go-home">
+            <a href="{% url 'home' %}">Home</a>
+        </div>
+        {% if results %}
+    <h2>Results:</h2>
+    
+    <!-- Download button at the top -->
+    <form action="{% url 'download_excel' %}" method="POST" style="margin-bottom: 20px;">
+        {% csrf_token %}
+        <input type="hidden" name="platform" value="{{ platform }}">
+        <input type="hidden" name="sessionId" value="{{ sessionId }}">
+        <button type="submit" class="download-button">Download as Excel</button>
+    </form>
+
+    <div class="table-container">
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>Brand</th>
+                <th>Comment</th>
+                <th>Sentiment Result</th>
+                <th>Rating</th>
+                <th>Positive Score</th>
+                <th>Neutral Score</th>
+                <th>Negative Score</th>
+            </tr>
+            {% for ID, Brand, comment, sentiment, rating, positiveScore, neutralScore, negativeScore in results %}
+            <tr>
+                <td>{{ ID }}</td>
+                <td>{{ Brand }}</td>
+                <td>{{ comment }}</td>
+                <td>{{ sentiment }}</td>
+                <td>{{ rating }}</td>
+                <td>{{ positiveScore }}</td>
+                <td>{{ neutralScore }}</td>
+                <td>{{ negativeScore }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    
+    <div id="viewMoreContainer" class="view-more-container">
+        <button id="viewMoreButton" class="view-more-button" onclick="toggleViewMore()">View More</button>
+    </div>
+{% elif error %}
+    <p>{{ error }}</p>
+{% endif %}
+
+    
+    </div>
+
+    <script>
+        function showInputField(platform) {
+            let inputField = document.getElementById('inputField');
+            inputField.innerHTML = '';
+            if (platform === 'amazon') {
+                inputField.innerHTML = '<label for="sessionId">Put your sessionId:</label><input type="text" name="sessionId" id="sessionId" required>';
+            } else if (platform === 'flipkart') {
+                inputField.innerHTML = '<label for="sessionId">Put your sessionId:</label><input type="text" name="sessionId" id="sessionId" required>';
+            } else if (platform === 'playstore') {
+                inputField.innerHTML = '<label for="sessionId">Put your sessionId:</label><input type="text" name="sessionId" id="sessionId" required>';
+            }
+        }
+
+        function toggleViewMore() {
+            const tableContainer = document.querySelector('.table-container');
+            const viewMoreButton = document.getElementById('viewMoreButton');
+            tableContainer.classList.toggle('expanded');
+            if (tableContainer.classList.contains('expanded')) {
+                viewMoreButton.textContent = 'View Less';
+            } else {
+                viewMoreButton.textContent = 'View More';
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,277 @@
+# class downloadSentimentBySessionId(APIView):
+#     # authentication_classes = [JWTAuthentication]
+#     # permission_classes = [IsAuthenticated]
+#     def post(self,request):
+#         if request.method == 'POST':
+#             # data = json.loads(request.body)
+#             # sessionId=data.get('sessionId')
+#             # username=request.user.username
+#             try:
+#                 workbook = Workbook()
+#                 worksheet = workbook.active
+#                 # Define the column names
+#                 column_names = ['AppId', 'Brand']
+#                 # Write the column names to the first row 
+#                 for column_index, column_name in enumerate(column_names, start=1):
+#                     cell = worksheet.cell(row=1, column=column_index, value=column_name)
+#                 # Create the HttpResponse object with the appropriate headers
+#                 response = HttpResponse(
+#                     content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+#                 )
+#                 response['Content-Disposition'] = 'attachment; filename=excel_template_playstore.xlsx'
+
+#                 # Save the workbook to the response
+#                 workbook.save(response)
+
+#                 return response
+#             except Exception as e:
+#                 return JsonResponse({'status': 'error', 'message': str(e)})
+#         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+
+
+
+
+
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# import json
+# from django.db.models import Count 
+# def get_reviews_by_session(session_id):
+#     # Get the content type for amazonProduct (to filter reviews related to amazonProduct)
+#     content_type = ContentType.objects.get_for_model(amazonProduct)
+    
+#     # Filter reviews where sessionId matches and content_type corresponds to amazonProduct
+#     reviews = review.objects.filter(sessionId=session_id, content_type=content_type)
+    
+#     return reviews 
+
+# @csrf_exempt
+# def rating_distribution_by_session(request):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         session_id = data.get('session_id')
+#         reviews = get_reviews_by_session(session_id)
+#         rating_data = reviews.values('rating').annotate(review_count=Count('rating'))
+#         return JsonResponse(list(rating_data), safe=False)
+
+# @csrf_exempt
+# def sentiment_distribution_by_session(request):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         session_id = data.get('session_id')
+#         reviews = get_reviews_by_session(session_id)
+#         sentiment_data = sentimentResult.objects.filter(review__in=reviews).values('estimatedResult').annotate(sentiment_count=Count('estimatedResult'))
+#         print(list(sentiment_data))
+#         return JsonResponse(list(sentiment_data), safe=False)
+from django.shortcuts import render
+from .models import review, amazonProduct, sentimentResult
+import re
+from wordcloud import WordCloud
+from nltk.corpus import stopwords
+from django.views.decorators.csrf import csrf_exempt
+import json
+import nltk
+from collections import defaultdict
+
+
+
+def clean_review_content(reviews):
+    stop_words = set(stopwords.words('english'))
+    cleaned_review_text = []
+
+    for review in reviews:
+        text = review['reviewContent'].lower()
+        text = re.sub(r'\W', ' ', text)
+        text = re.sub(r'\d+', '', text)
+        words = [word for word in text.split() if word not in stop_words]
+
+        cleaned_text = " ".join(words)
+        if cleaned_text:
+            cleaned_review_text.append({
+                'cleaned_text': cleaned_text,
+                'positiveScore': review['positiveScore'],
+                'neutralScore': review['neutralScore'],
+                'negativeScore': review['negativeScore']
+            })
+
+    return cleaned_review_text
+
+def generate_wordcloud(text):
+    if text.strip():
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+        return wordcloud.words_
+    else:
+        return {}
+
+@csrf_exempt
+def generate_asin_wordclouds(request):
+    if request.method == 'POST':
+        session_id = request.POST.get('sessionId')
+        print(f"Session ID received: {session_id}")
+
+        unique_asins = amazonProduct.objects.filter(sessionId=session_id).values_list('Asin', flat=True).distinct()
+        print(f"Unique ASINs found: {list(unique_asins)}")
+
+        asin_wordcloud_data = {}
+        asin_wordclouds = {}
+
+        for asin in unique_asins:
+            amazon_product = amazonProduct.objects.get(Asin=asin, sessionId=session_id)
+            asin_reviews = review.objects.filter(content_type__model='amazonproduct', object_id=amazon_product.id)
+
+            sentiment_results = sentimentResult.objects.filter(review__in=asin_reviews)
+
+            review_data = []
+            for sentiment in sentiment_results:
+                review_data.append({
+                    'reviewContent': sentiment.review.reviewContent,
+                    'positiveScore': sentiment.positiveScore,
+                    'neutralScore': sentiment.neutralScore,
+                    'negativeScore': sentiment.negativeScore
+                })
+
+            cleaned_review_data = clean_review_content(review_data)
+            combined_text = " ".join([item['cleaned_text'] for item in cleaned_review_data])
+            
+            if combined_text.strip():
+                asin_wordclouds[asin] = generate_wordcloud(combined_text)
+                asin_wordcloud_data[asin] = cleaned_review_data
+                print(f"Valid text found for ASIN: {asin}")
+            else:
+                print(f"No valid text found for ASIN: {asin}")
+
+        # print(f"ASIN Wordclouds: {asin_wordclouds}")
+        # print(f"ASIN Wordcloud Data: {asin_wordcloud_data}")
+
+        return render(request, 'platforms/amazon_wordclouds.html', {
+    'asin_wordclouds': json.dumps(asin_wordclouds),
+    'asin_wordcloud_data': json.dumps(asin_wordcloud_data)
+})
+
+    return render(request, 'platforms/session_input.html')
+
+
+
+
+from collections import defaultdict
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import logging
+# @csrf_exempt
+def getDataForPlaystoreGraph(request):
+    if request.method == 'GET':  # Ensure it's a POST request
+        return JsonResponse({'error': 'wrong request method'}, status=400)
+    body = json.loads(request.body)
+    sessionId = body.get('sessionId')  # Get sessionId from POST data
+    # print(sessionId)
+    if not sessionId:
+        return JsonResponse({'error': 'sessionId is required'}, status=400)
+
+    try:
+        # Query for products based on the sessionId
+        playstore_product = playstoreProduct.objects.filter(sessionId=sessionId)
+        playstore_product_type = ContentType.objects.get_for_model(playstoreProduct)
+    except playstoreProduct.DoesNotExist:
+        return JsonResponse({'error': 'No products found for the given sessionId'}, status=404)
+    except Exception as e:
+        logging.error(f"Error fetching products or content type: {e}")
+        return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
+
+    # Dictionary to store counts of positive, negative, and neutral reviews for each ASIN
+    appId_sentiment_counts = defaultdict(lambda: {'positiveCount': 0, 'negativeCount': 0, 'neutralCount': 0})
+
+    # Iterate through products and reviews
+    try:
+        for product in playstore_product:
+            product_reviews = review.objects.filter(content_type=playstore_product_type, object_id=product.id)
+            review_ids = [review.id for review in product_reviews]
+            sentiments = sentimentResult.objects.filter(review_id__in=review_ids)
+            for sentiment in sentiments:
+                if sentiment.estimatedResult == 'Positive':
+                    appId_sentiment_counts[product.AppId]['positiveCount'] += 1
+                elif sentiment.estimatedResult == 'Negative':
+                    appId_sentiment_counts[product.AppId]['negativeCount'] += 1
+                elif sentiment.estimatedResult == 'Neutral':
+                    appId_sentiment_counts[product.AppId]['neutralCount'] += 1
+    except Exception as e:
+        logging.error(f"Error processing reviews or sentiments: {e}")
+        return JsonResponse({'error': 'An error occurred while processing reviews and sentiments'}, status=500)
+
+    # Prepare data to send to frontend
+    data = []
+    for appId, counts in appId_sentiment_counts.items():
+        data.append({
+            'appId': appId,
+            'positiveCount': counts['positiveCount'],
+            'negativeCount': counts['negativeCount'],
+            'neutralCount': counts['neutralCount']
+        })
+
+    return JsonResponse({'data': data})
+
+
+
+
+
+
+
+
+
+    {% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>AG Charts Quick Start</title>
+        <!-- JavaScript Charts Core Library -->
+       
+    </head>
+    <style>
+        /* styles.css */
+
+/* Make the chart container responsive */
+#myChart {
+    width: 90%;        /* Use percentage to allow flexibility */
+    max-width: 700px; /* Set a maximum width */
+    height: 300px;     /* Maintain a fixed height or use a relative unit like vh */
+    margin: 20px auto; /* Add some top and bottom margin, and center horizontally */
+    border: 1px solid #ccc; /* Optional */
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1); /* Optional */
+}
+
+/* Adjust height for smaller screens */
+@media (max-width: 768px) {
+    #myChart {
+        height: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    #myChart {
+        height: 300px;
+    }
+}
+
+    </style>
+    <body>
+        <!-- Form to hold Session ID and CSRF token -->
+        <form id="graphForm" method="POST" action='.'>
+            {% csrf_token %}
+            <label for="session-id">Session ID:</label>
+            <input type="text" id="session-id" name="session-id" placeholder="Enter Session ID">
+            <button id="renderchart-btn" type="button" onclick="showGraph()">Render visualization for your session</button>  
+        </form>        
+        <!-- Placeholder for Chart -->
+        <div id="myChart"></div>
+        
+        <!-- Charts configuration file -->
+        <script src="{% static 'js/chart.js' %}"></script>
+       
+
+        <!-- Pass Django URL dynamically to JavaScript -->
+        <script>  
+            const getDataForPlaystoreGraph = "{% url 'getDataForPlaystoreGraph' %}";
+        </script>
+         <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/umd/ag-charts-community.js" defer></script>
+    </body>
+</html>

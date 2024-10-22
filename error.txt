@@ -1,0 +1,22 @@
+1) {% extends "./_base.html" %}
+this error i did once not applying ./ 
+
+2) mazon.js:114 Error: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+uploadFile @ amazon.js:114
+await in uploadFile
+onclick @ amazonPage/:26Understand this error
+this error was coming because data base intercaction was not configured correclty
+
+on amazon only upto page nuber 10 we are getting data after page no 10 how will we find
+for every filter amazon has restricted more that 10 pages to render in reviw
+3) as a solution we can select the top 100 review of all 1,2,3,4,5 stars  so in this way i can get 500 review for every product 
+
+4) but let say we processing this code and at the same time databse is getting write some additional review how it will respond to that
+ans) Fetching Reviews:
+
+The amazon_product_reviews queryset is created before processing begins. This queryset represents a snapshot of the reviews at the time of fetching.
+If new reviews are added to the database after the queryset is fetched, they are not included in this snapshot. The processing will only handle the reviews that were present in the database at the time the queryset was generated.
+Concurrent Review Addition:
+
+While your threads are processing the reviews from the original queryset, new reviews being added to the database will not affect the currently running processing tasks.
+However, new reviews will not be processed until you explicitly fetch them in a subsequent operation.

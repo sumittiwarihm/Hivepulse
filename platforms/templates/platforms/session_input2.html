@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment Analysis Donut Charts</title>
+    <!-- CDN link for ag-charts-community -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js"></script>
+    <style>
+        /* General Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        form label {
+            font-size: 18px;
+            margin-right: 10px;
+            color: #333;
+        }
+
+        form input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+            margin-bottom: 10px;
+        }
+
+        form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        form button:hover {
+            background-color: #45a049;
+        }
+
+        /* Chart Container Styles */
+       /* Chart Container Styles */
+
+
+
+        /* Individual Chart Styles */
+        /* .chartDiv {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            padding: 10px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        } */
+
+        /* Loading Indicator Styles */
+        #loading {
+            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            form input[type="text"] {
+                width: 200px;
+            }
+
+            .chart-container-wrapper > div {
+                max-width: 100%; /* Ensure full width on smaller screens */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sentiment Analysis for Apps (Positive, Negative, Neutral)</h1>
+
+    <form id="session-form" method="post">
+        <label for="sessionId">Session ID:</label>
+        <input type="text" id="sessionId" name="sessionId" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Loading Indicator -->
+    <div id="loading">
+        <p>Loading data, please wait...</p>
+    </div>
+
+    <!-- Container for charts -->
+    <div id="chartContainer" aria-label="Sentiment Analysis Donut Charts"></div>
+
+    <script>
+        document.getElementById('session-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const sessionId = document.getElementById('sessionId').value.trim();
+            if (!sessionId) {
+                alert("Session ID is required!");
+                return;
+            }
+
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('chartContainer').style.display = 'none';
+
+            fetch('{% url "getDataforPlaystoreCategorization" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Include CSRF token if required by your backend
+                    'X-CSRFToken': getCookie('csrftoken') // Example for Django
+                },
+                body: JSON.stringify({ sessionId: sessionId })
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok (${response.status})`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        renderDonutCharts(data.data);
+                    } else {
+                        alert("No data available for the given session.");
+                        clearChart();
+                    }
+                })
+                .catch(error => {
+                    alert("Error fetching data: " + error);
+                    clearChart();
+                })
+                .finally(() => {
+                    // Hide loading indicator
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('chartContainer').style.display = 'grid';
+                });
+        });
+
+        // Function to get CSRF token (example for Django)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Function to clear the chart container
+        function clearChart() {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = '';
+        }
+
+        // Define a color mapping for categories
+        const categoryColors = {
+            'Other': '#8e44ad',
+            'Delivery Related': '#3498db',
+            'Customer Support': '#e67e22',
+            'Quality Of Product': '#e74c3c',
+            'App Experience': '#2ecc71',
+            'Price': '#f1c40f',
+            'Payment Related': '#1abc9c'
+            // Add more categories and colors as needed
+        };
+
+        // Render donut charts for positive, negative, and neutral reviews
+        function renderDonutCharts(data) {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = '';  // Clear previous charts
+
+            data.forEach(app => {
+                ['positive', 'negative', 'neutral'].forEach(sentimentType => {
+                    const chartData = [];
+                    const sentimentColor = getSentimentColor(sentimentType);
+
+                    for (const category in app.category) {
+                        if (app.category.hasOwnProperty(category)) {
+                            const categoryData = app.category[category];
+                            const sentimentKey = `total${capitalizeFirstLetter(sentimentType)}`;
+                            const count = app[sentimentKey];
+                            const percentage = calculatePercentage(categoryData[sentimentType], count);
+                            chartData.push({
+                                category: formatCategoryName(category),
+                                value: percentage
+                            });
+                        }
+                    }
+
+                    // Create a container for each chart
+                    const chartDiv = document.createElement('div');
+                    chartDiv.classList.add('chartDiv');
+                    chartContainer.appendChild(chartDiv);
+
+                    // Prepare fills array based on category colors
+                    const fills = chartData.map(item => categoryColors[item.category] || '#bdc3c7'); // default color if not mapped
+
+                    // Create the chart
+                    agCharts.AgChart.create({
+                        container: chartDiv,
+                        autoSize: true,
+                        data: chartData,
+                        title: {
+                            text: `${capitalizeFirstLetter(sentimentType)} Sentiment for ${app.appId}`,
+                            fontSize: 16,
+                            fontWeight: 'bold',
+                            padding: { top: 10, bottom: 10 }
+                        },
+                        series: [{
+                            type: "pie",
+                            angleKey: "value",
+                            labelKey: "category",
+                            calloutLabelKey:"category",
+                            innerRadiusOffset: -50, // Makes it a donut chart
+                            innerRadius: 50,
+                            fills: fills,
+                            strokes: fills,
+                            sectorLabel: {
+                                color: sentimentType === 'neutral' ? 'black' : 'white',
+                                fontWeight: 'bold',
+                                formatter: (params) => {
+                                    return `${params.datum.value.toFixed(1)}%`;
+                                }
+                            },
+                            calloutLabel: {
+                                enabled: true,
+                                formatter: (params) => {
+                                    return `${params.datum.category}: ${params.datum.value.toFixed(1)}%`;
+                                },
+                                fontSize: 12,
+                                color: sentimentColor,
+                                background: {
+                                    fill: 'rgba(255, 255, 255, 0.8)'
+                                },
+                                padding: 4
+                            }
+                        }],
+                        legend: {
+                            position: 'right',
+                            item: {
+                                paddingY: 4
+                            }
+                        }
+                    });
+                });
+            });
+        }
+
+        // Helper function to capitalize the first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Helper function to format category names
+        function formatCategoryName(category) {
+            // Replace camelCase or PascalCase with space-separated words and capitalize each word
+            return category
+                .replace(/([A-Z])/g, ' $1') // Add space before uppercase letters
+                .split(' ') // Split into words
+                .map(word => capitalizeFirstLetter(word)) // Capitalize each word
+                .join(' ') // Rejoin into a single string
+                .trim();
+        }
+
+        // Helper function to get sentiment color
+        function getSentimentColor(sentiment) {
+            const sentimentColors = {
+                'positive': '#4CAF50', // Green
+                'negative': '#F44336', // Red
+                'neutral': '#9E9E9E'   // Gray
+            };
+            return sentimentColors[sentiment] || '#000000'; // default to black if not found
+        }
+
+        // Calculate percentage
+        function calculatePercentage(count, total) {
+            if (total === 0) {
+                return 0;
+            }
+            return (count / total) * 100;
+        }
+    </script>
+</body>
+
+</html>

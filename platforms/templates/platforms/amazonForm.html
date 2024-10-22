@@ -1,0 +1,70 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Report</title>
+    <link rel="stylesheet" href="{% static 'css/form.css' %}">
+</head>
+<body>
+    <div>
+        <div class="title">
+            <h2>Download/Upload Page</h2>
+        </div>
+        <div class="content-container">
+            <div class="download-section">
+                <h2>Download Excel Template</h2>
+                <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
+            </div>
+        </div>
+        <div class="content-container">
+            <div class="upload-section">
+                <h2>Upload Filled Excel File</h2>
+                <form id="uploadForm"  enctype="multipart/form-data" >
+                    {% csrf_token %}
+                    <input type="file" name="file" required>
+                    <button id="uploadButton" type="button" onclick="uploadFile()">Upload</button>
+                </form>
+            </div>
+        </div>
+        <div class="go-home">
+            <a href="{% url 'home' %}">Home</a>
+        </div>
+    </div>
+    <div id="spinner">
+        <svg xmlns="http://www.w3.org/2000/svg" style="margin: auto; background: none; display: block;" width="50px" height="50px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+            <circle cx="50" cy="50" fill="none" stroke="#000" stroke-width="10" r="35" stroke-dasharray="164.93361431346415 56.97787143782138">
+                <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" keyTimes="0;1" values="0 50 50;360 50 50"></animateTransform>
+            </circle>
+        </svg>
+    </div>
+    <div class="script-container">
+        <!-- Left Side: Run Scrapping Script -->
+        <div class="script-section">
+            <label for="scrapping-session-id">Session ID:</label>
+            <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
+            <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Script for processing your uploaded ASINs</button>
+            <p id="scrappingScript-status"></p>
+        </div>
+        
+        <!-- Right Side: Run Sentiment Script -->
+        <div class="script-section">
+            <label for="sentiment-session-id">Session ID:</label>
+            <input type="text" id="sentiment-session-id" name="sentiment-session-id" placeholder="Enter Session ID">
+            <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Script for processing and getting the sentiment for your reviews</button>
+            <p id="sentimentScript-status"></p>
+        </div>
+    </div>
+    
+
+</body>
+</html>
+<script src="{% static 'js/script.js' %}"></script>
+<script>
+    const downloadTemplateUrl = "{% url 'downloadAmazonExcelTemplate' %}";
+    const uploadAmazonUrl = "{% url 'uploadAmazon' %}";
+    const runScrappingScriptUrl = "{% url 'runAmazonReviewScrappingScript' %}";
+    const csrfToken = "{{ csrf_token }}";
+    const runSentimentUrl = "{% url 'runAmazonReviewSentimentScript' %}";
+</script>
+<script src="{% static 'js/amazon.js' %}"></script>

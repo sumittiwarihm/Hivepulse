@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment Analysis Percentage Stacked Bar Chart</title>
+    <!-- CDN link for ag-charts-community -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js"></script>
+    <style>
+        /* General Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        form label {
+            font-size: 18px;
+            margin-right: 10px;
+            color: #333;
+        }
+
+        form input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+            margin-bottom: 10px;
+        }
+
+        form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        form button:hover {
+            background-color: #45a049;
+        }
+
+        /* Chart Container Styles */
+       
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            form input[type="text"] {
+                width: 200px;
+            }
+
+            .chart-container-wrapper > div {
+                max-width: 100%; /* Ensure full width on smaller screens */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sentiment Analysis for Apps (Positive, Negative, Neutral)</h1>
+
+    <form id="session-form" method="post">
+        <label for="sessionId">Session ID:</label>
+        <input type="text" id="sessionId" name="sessionId" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Container for the chart -->
+    <div id="chartContainer"></div>
+
+    <script>
+        document.getElementById('session-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const sessionId = document.getElementById('sessionId').value.trim();
+            if (!sessionId) {
+                alert("Session ID is required!");
+                return;
+            }
+
+            fetch('{% url "getDataforPlaystoreCategorization" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Include CSRF token if required by your backend
+                    'X-CSRFToken': getCookie('csrftoken') // Example for Django
+                },
+                body: JSON.stringify({ sessionId: sessionId })
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok (${response.status})`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        // Prepare data for the 100% stacked bar chart
+                        const chartData = data.data.map(app => {
+                            const total = app.totalPositive + app.totalNegative + app.totalNeutral;
+                            // Avoid division by zero
+                            const positivePercentage = total > 0 ? (app.totalPositive / total) * 100 : 0;
+                            const negativePercentage = total > 0 ? (app.totalNegative / total) * 100 : 0;
+                            const neutralPercentage = total > 0 ? (app.totalNeutral / total) * 100 : 0;
+                            return {
+                                appId: app.appId,
+                                Positive: positivePercentage,
+                                Negative: negativePercentage,
+                                Neutral: neutralPercentage,
+                                total: total
+                            };
+                        });
+
+                        renderPercentageStackedBarChart(chartData);
+                    } else {
+                        alert("No data available for the given session.");
+                        clearChart();
+                    }
+                })
+                .catch(error => {
+                    alert("Error fetching data: " + error);
+                    clearChart();
+                });
+        });
+
+        // Function to get CSRF token (example for Django)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Function to clear the chart container
+        function clearChart() {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = '';
+        }
+
+        // Render 100% stacked bar chart for positive, negative, and neutral reviews in percentage
+        function renderPercentageStackedBarChart(data) {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = ''; // Clear previous charts if any
+
+            // Create the chart
+            agCharts.AgChart.create({
+                container: chartContainer,
+                autoSize: true,
+                title: {
+                    text: 'Sentiment Analysis per App (Percentage)',
+                    fontSize: 20
+                },
+                data: data,
+                series: [
+                    // Positive Series
+                    {
+                        type: 'column',
+                        xKey: 'appId',
+                        yKey: 'Positive',
+                        yName: 'Positive',
+                        stacked: true,
+                        fill: '#4CAF50',
+                        stroke: '#388E3C',
+                        label: {
+                            enabled: true,
+                            formatter: params => {
+                                const percentage = params.yValue;
+                                return `${percentage.toFixed(1)}%`;
+                            },
+                            fontSize: 12,
+                            color: 'white'
+                        }
+                    },
+                    // Negative Series
+                    {
+                        type: 'column',
+                        xKey: 'appId',
+                        yKey: 'Negative',
+                        yName: 'Negative',
+                        stacked: true,
+                        fill: '#F44336',
+                        stroke: '#D32F2F',
+                        label: {
+                            enabled: true,
+                            formatter: params => {
+                                const percentage = params.yValue;
+                                return `${percentage.toFixed(1)}%`;
+                            },
+                            fontSize: 12,
+                            color: 'white'
+                        }
+                    },
+                    // Neutral Series
+                    {
+                        type: 'column',
+                        xKey: 'appId',
+                        yKey: 'Neutral',
+                        yName: 'Neutral',
+                        stacked: true,
+                        fill: '#FFC107',
+                        stroke: '#FFA000',
+                        label: {
+                            enabled: true,
+                            formatter: params => {
+                                const percentage = params.yValue;
+                                return `${percentage.toFixed(1)}%`;
+                            },
+                            fontSize: 12,
+                            color: 'black'
+                        }
+                    }
+                ],
+                axes: [
+                    {
+                        type: 'category',
+                        position: 'bottom',
+                        title: {
+                            text: 'App ID',
+                            fontSize: 16
+                        }
+                    },
+                    {
+                        type: 'number',
+                        position: 'left',
+                        title: {
+                            text: 'Percentage of Reviews (%)',
+                            fontSize: 16
+                        },
+                        min: 0,
+                        max: 100,
+                        tick: {
+                            interval: 10,
+                            formatter: params => `${params.value}%`
+                        },
+                        label: {
+                            formatter: params => `${params.value}%`
+                        }
+                    }
+                ],
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    renderer: (params) => {
+                        return {
+                            title: params.xValue,
+                            content: `${params.yName}: ${params.yValue.toFixed(1)}%`
+                        };
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

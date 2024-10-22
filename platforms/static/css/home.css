@@ -1,0 +1,461 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body */
+/* body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f7f9;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+} */
+
+/* Top Navigation */
+/* .topnav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #264653;
+    padding: 10px 15px;
+}
+
+.topnav .logo h4 {
+    color: #e9c46a;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.topnav .menu {
+    display: flex;
+    align-items: center;
+}
+
+.topnav a {
+    color: #f4a261;
+    text-align: center;
+    padding: 8px 15px;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin-left: 10px;
+}
+
+.topnav a:hover {
+    background-color: #2a9d8f;
+    color: #fff;
+} */
+
+/* Username Display */
+/* .username {
+    color: #e9c46a;
+    margin-left: 15px;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    display: none;
+    background-color: #2a9d8f;
+}
+
+.username.active {
+    display: inline-block;
+} */
+
+/* Card Container */
+/* .card-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin: 20px auto;
+    max-width: 1200px;
+    gap: 15px;
+    padding: 0 10px;
+}
+
+.card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    width: 300px;
+    height: 280px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.card h2 {
+    font-size: 20px;
+    color: #264653;
+    margin-bottom: 8px;
+}
+
+.card p {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.card a {
+    background-color: #2a9d8f;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    background-color: #f0f0f0;
+}
+
+.card a:hover {
+    background-color: #e76f51;
+} */
+
+/* Form Container */
+/* .form-container {
+    background-color: #264653;
+    color: white;
+    text-align: center;
+    padding: 5px 5px;
+    border-top: 2px solid #ccc;
+    margin-top: auto;
+}
+
+.form-container h2 {
+    margin-bottom: 10px;
+}
+
+.form-container form {
+    display: inline-block;
+}
+
+.form-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #f4a261;
+}
+
+.form-container input[type="text"] {
+    width: 280px;
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.form-container button {
+    background-color: #2a9d8f;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: none;
+}
+
+.form-container button:hover {
+    background-color: #e76f51;
+} */
+
+/* Responsive Design */
+/* @media (max-width: 768px) {
+    .card-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card {
+        width: 90%;
+    }
+
+    .form-container input[type="text"] {
+        width: 80%;
+    }
+}
+
+@media (max-width: 480px) {
+    .topnav .logo h4 {
+        font-size: 18px;
+    }
+
+    .topnav a {
+        padding: 6px 10px;
+    }
+
+    .card-container {
+        padding: 0 5px;
+    }
+
+    .card {
+        width: 100%;
+    }
+
+    .form-container input[type="text"] {
+        width: 100%;
+    }
+} */
+
+/* Reset */
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body */
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f7f9;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Top Navigation */
+.topnav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #264653;
+    padding: 5px 15px; /* Reduced padding for a smaller height */
+}
+
+.topnav .logo h4 {
+    color: #e9c46a;
+    font-size: 20px; /* Slightly reduced font size */
+    font-weight: bold;
+}
+
+.topnav .menu {
+    display: flex;
+    align-items: center;
+}
+
+.topnav a {
+    color: #f4a261;
+    text-align: center;
+    padding: 6px 12px; /* Slightly reduced padding */
+    text-decoration: none;
+    font-size: 14px; /* Slightly reduced font size */
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin-left: 8px; /* Slightly reduced margin */
+}
+
+.topnav a:hover {
+    background-color: #2a9d8f;
+    color: #fff;
+}
+
+/* Username Display */
+.username {
+    color: #e9c46a;
+    margin-left: 10px; /* Adjusted margin */
+    font-weight: bold;
+    padding: 6px 12px; /* Adjusted padding */
+    border-radius: 5px;
+    display: none;
+    background-color: #2a9d8f;
+}
+
+.username.active {
+    display: inline-block;
+}
+
+/* Content Container */
+.content-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Center content vertically */
+    padding: 20px; /* Add padding for better spacing */
+    margin-top: 60px; /* Ensure content doesn't overlap with navbar */
+    margin-bottom: 60px; /* Ensure content doesn't overlap with footer */
+    flex: 1; /* Make content-container flexible to fill remaining space */
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+/* Left Section */
+.left-section {
+    flex: 1;
+    display: flex;
+    justify-content: center; /* Center horizontally within its container */
+    align-items: center; /* Center vertically within its container */
+}
+
+.analysis-image {
+    max-width: 100%; /* Ensure image scales within its container */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* Right Section */
+.right-section {
+    flex: 1;
+    display: flex;
+    justify-content: center; /* Align content to the right */
+    align-items: center; /* Center vertically within its container */
+    padding-left: 20px; /* Add padding between left and right sections */
+}
+
+/* Platform Selection Styling */
+/* Platform Selection */
+.platform-selection {
+    margin-right: 0; 
+/* Ensure no extra space on the right */
+}
+
+.platform-selection h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #264653;
+}
+
+.platform-selection label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #f4a261;
+}
+
+.platform-selection select {
+    width: 100%; /* Make the select box fill available width */
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff; /* Set background color to white */
+    color: #333; /* Text color for contrast */
+    font-size: 16px; /* Font size to match the design */
+}
+
+.platform-selection button {
+    margin-top: 20px;
+    background-color: #2a9d8f;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px; /* Space between select box and button */
+}
+
+.platform-selection button:hover {
+    background-color: #e76f51;
+}
+
+
+/* Footer Styling */
+/* Footer Styling */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #264653;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    box-sizing: border-box;
+}
+
+.form-container {
+    display: flex;
+    align-items: center; /* Center align items horizontally */
+    flex-direction: row; /* Align items in a row */
+    gap: 10px; /* Add space between items */
+    max-width: 1000px; /* Ensure the container doesn't exceed screen width */
+    width: 100%;
+}
+
+.form-container h2 {
+    margin-right: 15px; /* Space between label and form elements */
+    font-size: 16px; /* Adjust font size for compact appearance */
+}
+
+.form-container form {
+    display: flex;
+    flex-direction: row; /* Align form elements in a row */
+    align-items: center;
+    width: auto; /* Auto width for the form container */
+}
+
+.form-container label {
+    display: block;
+    font-size: 14px; /* Slightly smaller font size */
+    color: #f4a261;
+    margin-right: 10px; /* Space between label and input */
+}
+
+.form-container input[type="text"] {
+    width: 200px; /* Set a fixed width for the input */
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-right: 10px; /* Space between input and button */
+}
+
+.form-container button {
+    background-color: #2a9d8f;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.form-container button:hover {
+    background-color: #e76f51;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+    }
+
+    .left-section,
+    .right-section {
+        width: 100%;
+    }
+
+    .platform-selection select,
+    .platform-selection button {
+        width: 100%;
+    }
+
+    .form-container input[type="text"] {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .topnav .logo h4 {
+        font-size: 18px;
+    }
+
+    .topnav a {
+        padding: 6px 10px;
+    }
+
+    .content-container {
+        padding: 10px;
+    }
+}
+
+
