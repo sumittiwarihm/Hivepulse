@@ -105,13 +105,14 @@
     <script>
         document.getElementById('session-form').addEventListener('submit', function (event) {
             event.preventDefault();
-
+            
             const sessionId = document.getElementById('sessionId').value.trim();
             if (!sessionId) {
-                alert("Session ID is required!");
+                alert("Session ID is required!" );
+               
                 return;
             }
-
+            
             fetch('{% url "getDataforPlaystoreCategorization" %}', {
                 method: 'POST',
                 headers: {
@@ -122,6 +123,9 @@
                 body: JSON.stringify({ sessionId: sessionId })
             })
                 .then((response) => {
+                    if (response.status === 404) {
+                    throw new Error(`No data found for the given sessionId `);
+                }
                     if (!response.ok) {
                         throw new Error(`Network response was not ok (${response.status})`);
                     }
@@ -160,6 +164,7 @@
         // Function to get CSRF token (example for Django)
         function getCookie(name) {
             let cookieValue = null;
+           
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');
                 for (let i = 0; i < cookies.length; i++) {

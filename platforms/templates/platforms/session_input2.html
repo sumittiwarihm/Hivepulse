@@ -153,6 +153,9 @@
                 body: JSON.stringify({ sessionId: sessionId })
             })
                 .then((response) => {
+                    if (response.status === 404) {
+                    throw new Error("No data found for the given sessionId");
+                  }
                     if (!response.ok) {
                         throw new Error(`Network response was not ok (${response.status})`);
                     }

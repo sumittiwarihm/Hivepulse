@@ -641,6 +641,7 @@ from collections import defaultdict
 from .utils import assign_category, CATEGORY_KEYWORDS
 
 # @ login_required
+@csrf_exempt
 def getDataforPlaystoreCategorization(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method is allowed'}, status=400)
