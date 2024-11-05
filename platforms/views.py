@@ -103,6 +103,7 @@ def playstorePage(request):
     return render (request, 'platforms/playstoreForm.html')
 
 
+
 # redirect code end -------------------------------------------------------------------------------------
 
 
@@ -384,7 +385,7 @@ class uploadPlaystore(APIView):
                         )
                 try:
                     subject = 'Playstore Product Upload Session ID'
-                    message = f'Dear {username},\n\nYour session ID for the recent Amazon product upload is: {session_id}\n\nRegards,\nYour Team'
+                    message = f'Dear {username},\n\nYour session ID for the recent Playstore product upload is: {session_id}\n\nRegards,\nYour Team'
                     recipient_list = ['tiwarisumit272181@gmail.com','harishkumar.c@hiveminds.in']
                     send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list, fail_silently=False)
                     return JsonResponse({'success': True})
@@ -569,12 +570,16 @@ from django.views.decorators.csrf import csrf_exempt
 import logging
 
 @csrf_exempt
-def sessionInput(request):
-    return render(request, 'platforms/session_input.html')
-def sessionInput2(request):
-    return render(request, 'platforms/session_input2.html')
-def sessionInput3(request):
-    return render(request, 'platforms/session_input3.html')
+def sessionInputPlaystore1(request):
+    return render(request, 'platforms/sessionInputPlaystore1.html')
+def sessionInputPlaystore2(request):
+    return render(request, 'platforms/sessionInputPlaystore2.html')
+def sessionInputPlaystore3(request):
+    return render(request, 'platforms/sessionInputPlaystore3.html')
+def sessionInputAmazon(request):
+    return render (request,'platforms/sessionInputAmazon.html')
+def sessionInputFlipkart(request):
+    return render (request,'platforms/sessionInputFlipkart.html')
 # @ login_required
 def getDataForGraph(request):
     if request.method == 'GET':  # Ensure it's a POST request
@@ -679,7 +684,7 @@ def getDataforPlaystoreCategorization(request):
 
             for rev in reviews:
                 # Fetch sentiment result from sentimentResult model (already stored)
-                sentiment = sentimentResult.objects.filter(review=rev).first()
+                sentiment = sentimentResult.objects.filter(review=rev.id).first()
                 sentiment_result = sentiment.estimatedResult.lower() if sentiment else 'neutral'
 
                 # Categorize the review based on its content
@@ -711,6 +716,111 @@ def getDataforPlaystoreCategorization(request):
         return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
     
             
+
+#---------------graph api building for amazon--------------------------------------
+# i want data in formate of (asin , brand totalPositive, totalNegative ,totalNeutral)
+@csrf_exempt
+def getDataForAmazonCategorization(request):
+    if(request.method!='POST'):
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=400)
+    try:
+       body=json.loads(request.body)
+       sessionId=body.get('sessionId') 
+       if not sessionId:
+           return  JsonResponse({'error':"sessionId is required" },status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON payload'}, status=400)
+    try:
+        amazon_products=amazonProduct.objects.filter(sessionId=sessionId)
+        if not amazon_products.exists():
+            return JsonResponse({'error':"no amazon ASIN is present in tha dataabse"})
+        response_data=[]
+        for product in amazon_products:
+            Asin=product.Asin
+            total_positive=total_negative=total_neutral=0
+            product_type=ContentType.objects.get_for_model(amazonProduct)
+            reviews=review.objects.filter(content_type=product_type,object_id=product.id)
+            for rev in reviews:
+                sentiment=sentimentResult.objects.filter(review_id=rev.id).first()
+                sentiment_result=sentiment.estimatedResult.lower() if sentiment else 'neutral'
+                if sentiment_result=='positive':
+                    total_positive+=1
+                elif sentiment_result=='negative':
+                    total_negative+=1
+                else:
+                    total_neutral+=1
+            response_data.append({
+                'asin': Asin,
+                'brand': product.Brand,
+                'totalPositive':total_positive,
+                'totalNegative':total_negative,
+                'totalNeutral':total_neutral
+            })
+        return JsonResponse({'data':response_data},status=200)
+    except Exception as e:
+        return JsonResponse({'error':f"an error occured during interaction with database :{str(e)}"},status=500)
+@csrf_exempt
+def getDataForFlipkartCategorization(request):
+    if(request.method!='POST'):
+        return JsonResponse({'error':"post method is not alllowed"},status=400)
+    try:
+        body=json.loads(request.body)
+        sessionId=body.get('sessionId')
+        if not sessionId:
+            return JsonResponse({'error':'sessionID is not found'},status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'error':"invalid payload"},status=400)
+    try:
+        flipkart_product=flipkartProduct.objects.filter(sessionId=sessionId)
+        if not flipkart_product.exists():
+            return JsonResponse({'error':"no product exist for this sessionId"})
+        response_data=[]
+        for product in flipkart_product:
+            # now for every product we want all the reviews and after that we will require all the sentiment according to that
+            total_positive=total_negative=total_neutral=0
+            Fsn=product.Fsn
+            product_type=ContentType.objects.get_for_model(flipkartProduct)
+            reviews=review.objects.filter(content_type=product_type,object_id=product.id)
+            for rev in reviews:
+                sentiment=sentimentResult.objects.filter(review_id=rev.id).first()
+                sentiment_result=sentiment.estimatedResult.lower() if sentiment else 'neutral'
+                if sentiment_result=='positive':
+                    total_positive+=1
+                elif sentiment_result=='negative':
+                    total_negative+=1
+                else:
+                    total_neutral+=1
+            response_data.append({
+                'fsn':Fsn,
+                'brand':product.Brand,
+                'totalPositive':total_positive,
+                'totalNegative':total_negative,
+                'totalNeutral': total_neutral
+            })
+    except Exception as e:
+        return JsonResponse({'error':f"an error occured during interaction with database :{str(e)}"},status=500)
+
+                
+
+            
+
+
+
+
+
+
+
+
+
+
+
+        
+
+        
+
+
+
+
 
 
 

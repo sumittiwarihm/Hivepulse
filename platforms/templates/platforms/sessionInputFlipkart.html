@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment Analysis Percentage Stacked Bar Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js"></script>
+    <style>
+        /* General Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        form label {
+            font-size: 18px;
+            margin-right: 10px;
+            color: #333;
+        }
+        form input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+            margin-bottom: 10px;
+        }
+        form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+            margin-bottom: 10px;
+        }
+        form button:hover {
+            background-color: #45a049;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            form input[type="text"] {
+                width: 200px;
+            }
+            .chart-container-wrapper > div {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sentiment Analysis for Products (Positive, Negative, Neutral)</h1>
+
+    <form id="session-form" method="post">
+        <label for="sessionId">Session ID:</label>
+        <input type="text" id="sessionId" name="sessionId" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="chartContainer"></div>
+
+    <script>
+        document.getElementById('session-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            
+            const sessionId = document.getElementById('sessionId').value.trim();
+            if (!sessionId) {
+                alert("Session ID is required!");
+                return;
+            }
+            
+            fetch('{% url "getDataForFlipkartCategorization" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ sessionId: sessionId })
+            })
+                .then(response => {
+                    if (response.status === 404) {
+                        throw new Error("No data found for the given sessionId");
+                    }
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok (${response.status})`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                        const chartData = data.data.map(product => {
+                            const total = product.totalPositive + product.totalNegative + product.totalNeutral;
+                            const positivePercentage = total > 0 ? (product.totalPositive / total) * 100 : 0;
+                            const negativePercentage = total > 0 ? (product.totalNegative / total) * 100 : 0;
+                            const neutralPercentage = total > 0 ? (product.totalNeutral / total) * 100 : 0;
+                            return {
+                                brand: product.brand,
+                                Positive: positivePercentage,
+                                Negative: negativePercentage,
+                                Neutral: neutralPercentage,
+                                total: total
+                            };
+                        });
+
+                        renderPercentageStackedBarChart(chartData);
+                    } else {
+                        alert("No data available for the given session.");
+                        clearChart();
+                    }
+                })
+                .catch(error => {
+                    alert("Error fetching data: " + error);
+                    clearChart();
+                });
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function clearChart() {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = '';
+        }
+
+        function renderPercentageStackedBarChart(data) {
+            const chartContainer = document.getElementById('chartContainer');
+            chartContainer.innerHTML = '';
+
+            agCharts.AgChart.create({
+                container: chartContainer,
+                autoSize: true,
+                title: {
+                    text: 'Sentiment Analysis per Product (Percentage)',
+                    fontSize: 20
+                },
+                data: data,
+                series: [
+                    {
+                        type: 'column',
+                        xKey: 'brand',
+                        yKey: 'Positive',
+                        yName: 'Positive',
+                        stacked: true,
+                        fill: '#4CAF50',
+                        stroke: '#388E3C',
+                        label: {
+                            enabled: true,
+                            formatter: params => `${params.yValue.toFixed(1)}%`,
+                            fontSize: 12,
+                            color: 'white'
+                        }
+                    },
+                    {
+                        type: 'column',
+                        xKey: 'brand',
+                        yKey: 'Negative',
+                        yName: 'Negative',
+                        stacked: true,
+                        fill: '#F44336',
+                        stroke: '#D32F2F',
+                        label: {
+                            enabled: true,
+                            formatter: params => `${params.yValue.toFixed(1)}%`,
+                            fontSize: 12,
+                            color: 'white'
+                        }
+                    },
+                    {
+                        type: 'column',
+                        xKey: 'brand',
+                        yKey: 'Neutral',
+                        yName: 'Neutral',
+                        stacked: true,
+                        fill: '#FFC107',
+                        stroke: '#FFA000',
+                        label: {
+                            enabled: true,
+                            formatter: params => `${params.yValue.toFixed(1)}%`,
+                            fontSize: 12,
+                            color: 'black'
+                        }
+                    }
+                ],
+                axes: [
+                    {
+                        type: 'category',
+                        position: 'bottom',
+                        title: {
+                            text: 'Brand',
+                            fontSize: 16
+                        }
+                    },
+                    {
+                        type: 'number',
+                        position: 'left',
+                        title: {
+                            text: 'Percentage of Reviews (%)',
+                            fontSize: 16
+                        },
+                        min: 0,
+                        max: 100,
+                        tick: { interval: 10 },
+                        label: { formatter: params => `${params.value}%` }
+                    }
+                ],
+                legend: { position: 'top' },
+                tooltip: {
+                    renderer: params => ({
+                        title: params.datum.brand,
+                        content: `${params.yName}: ${params.yValue.toFixed(1)}%`
+                    })
+                }
+            });
+        }
+    </script>
+</body>
+</html>

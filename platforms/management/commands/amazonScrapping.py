@@ -61,7 +61,7 @@ class Command(BaseCommand):
                         total_reviews_text = match.group(1)
                         total_reviews_number_str = re.sub(r'[^\d]', '', total_reviews_text)
                         total_reviews = int(total_reviews_number_str)
-                        num_pages = min((total_reviews // 10) + 1, 10)  # Adjust the number of pages to scrape
+                        num_pages = min((total_reviews // 10) + 1, 10)  # Adjusting  the number of pages to scrape
                 except TimeoutException:
                     self.stdout.write(self.style.ERROR(f'Timed out waiting for reviews section for ASIN {Asin}'))
                     continue
