@@ -8,8 +8,14 @@
 </head>
 <body>
     <div>
-        <div class="title">
-            <h2>Download/Upload Page</h2>
+        <div class="title" style="display: flex ; justify-content:space-between ;">
+            <div class="logo">
+            <h2>HivePulse</h2>
+        </div>
+            <h4>Download/Upload Page</h4>
+            <div class="go-home">
+                <a href="{% url 'home' %}">Home</a>
+            </div>
         </div>
         <div class="content-container">
             <div class="download-section">
@@ -27,9 +33,7 @@
                 </form>
             </div>
         </div>
-        <div class="go-home">
-            <a href="{% url 'home' %}">Home</a>
-        </div>
+        
     </div>
     <div id="spinner">
         <svg xmlns="http://www.w3.org/2000/svg" style="margin: auto; background: none; display: block;" width="50px" height="50px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
@@ -38,12 +42,15 @@
             </circle>
         </svg>
     </div>
+    <div class="text">
+       <b>*</b>After uploading the filled excel file in proper format go ahead and run script for getting review and processing those reviews.
+    </div>
     <div class="script-container">
         <!-- Left Side: Run Scrapping Script -->
         <div class="script-section">
             <label for="scrapping-session-id">Session ID:</label>
             <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
-            <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Script for processing your uploaded ASINs</button>
+            <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Script for processing your uploaded ASINs and getting reviews</button>
             <p id="scrappingScript-status"></p>
         </div>
         
@@ -51,11 +58,18 @@
         <div class="script-section">
             <label for="sentiment-session-id">Session ID:</label>
             <input type="text" id="sentiment-session-id" name="sentiment-session-id" placeholder="Enter Session ID">
-            <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Script for processing and getting the sentiment for your reviews</button>
+            <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Script for processing  your reviews and saving sentiment </button>
             <p id="sentimentScript-status"></p>
         </div>
     </div>
-    
+    <!-- Modal Popup -->
+<div id="sessionModal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <span id="closeModal" style="cursor: pointer; float: right; font-size: 20px;">&times;</span>
+    <p>Genrated sessionId for your uploaded file furthure operation you can do with this id one copy of this is also sent to your mail <br>:-></br><span id="sessionIdText"></span></p>
+</div>
+<!-- Overlay -->
+<div id="overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
+
 
 </body>
 </html>

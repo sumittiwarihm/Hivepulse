@@ -171,7 +171,7 @@ class uploadAmazon(APIView):
                 message = f'Dear {username},\n\nYour session ID for the recent Amazon product upload is: {session_id}\n\nRegards,\nYour Team'
                 recipient_list = ['tiwarisumit272181@gmail.com','harishkumar.c@hiveminds.in']
                 send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list, fail_silently=False)
-                return JsonResponse({'success': True})
+                return JsonResponse({'success': True,'sessionId':session_id})
             else:
                 return JsonResponse({'success': False, 'error': 'Form is not valid'})
         else:
@@ -285,7 +285,7 @@ class uploadFlipkart(APIView):
                 message=f'Dear {username},\n\n Your session ID for the recent flipkart product upload is :{session_id}\n\nRegrads,\nAnalytics Team'
                 recipient_list = ['tiwarisumit272181@gmail.com','harishkumar.c@hiveminds.in']
                 send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list, fail_silently=False)
-                return JsonResponse({'success': True})
+                return JsonResponse({'success': True,'sessionId':session_id})
             else:
                 return JsonResponse({'success': False, 'error': 'Form is not valid'})
         else:
@@ -390,7 +390,7 @@ class uploadPlaystore(APIView):
                     message = f'Dear {username},\n\nYour session ID for the recent Playstore product upload is: {session_id}\n\nRegards,\nYour Team'
                     recipient_list = ['tiwarisumit272181@gmail.com','harishkumar.c@hiveminds.in']
                     send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list, fail_silently=False)
-                    return JsonResponse({'success': True})
+                    return JsonResponse({'success': True,'sessionId':session_id})
                 except:
                     return JsonResponse({'success':False,'error':'your email is not responding'})
             else:
@@ -572,12 +572,8 @@ from django.views.decorators.csrf import csrf_exempt
 import logging
 
 @csrf_exempt
-def sessionInputPlaystore1(request):
-    return render(request, 'platforms/sessionInputPlaystore1.html')
-def sessionInputPlaystore2(request):
-    return render(request, 'platforms/sessionInputPlaystore2.html')
-def sessionInputPlaystore3(request):
-    return render(request, 'platforms/sessionInputPlaystore3.html')
+def sessionInputPlaystore(request):
+    return render(request, 'platforms/sessionInputPlaystore.html')
 def sessionInputAmazon(request):
     return render (request,'platforms/sessionInputAmazon.html')
 def sessionInputFlipkart(request):

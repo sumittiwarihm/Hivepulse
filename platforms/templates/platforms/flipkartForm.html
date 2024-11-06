@@ -10,6 +10,9 @@
     <div>
         <div class="title">
             <h2>Download/Upload Page</h2>
+            <div class="go-home">
+                <a href="{% url 'home' %}">Home</a>
+            </div>
         </div>
         
         <!-- Content Container for Download and Upload -->
@@ -38,9 +41,7 @@
         </div>
         
         <!-- Go Home Button -->
-        <div class="go-home">
-            <a href="{% url 'home' %}">Home</a>
-        </div>
+        
     </div>
     
     <!-- Spinner -->
@@ -51,20 +52,22 @@
             </circle>
         </svg>
     </div>
-    
+    <div class="text">
+        <b>*</b>After uploading the filled excel file in proper format go ahead and run script for getting review and processing those reviews.
+     </div>
     <!-- Script Execution Buttons -->
     <div class="script-container">
         <div class="script-section">
             <label for="scrapping-session-id">Session ID:</label>
             <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
-            <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Script for processing your uploaded Fsn</button>
+            <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Script for processing your uploaded FSNs and getting reviews</button>
             <p id="scrappingScript-status"></p>
         </div>
         
         <div class="script-section">
             <label for="sentiment-session-id">Session Id:</label>
             <input type="text" id="sentiment-session-id" name="sentiment-session-id" placeholder="Enter Session ID">
-            <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Script for processing getting the sentiment for your reviews</button>
+            <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Script for processing  your reviews and saving sentiment </button>
             <p id="sentimentScript-status"></p>
         </div>
     </div>

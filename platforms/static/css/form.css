@@ -198,3 +198,43 @@ input[type="file"] {
         margin: 10px;
     }
 }
+
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap; 
+    padding: 10px 20px; 
+}
+
+.title h2 {
+    font-size: 24px;
+    color: #e9c46a;
+    margin: 5px 0;
+    flex-grow: 1; 
+}
+
+.go-home {
+    display: flex;
+    justify-content: flex-end;
+    margin: 5px 0;
+}
+
+.go-home a {
+    padding: 8px 12px; 
+    font-size: 14px; 
+}
+
+@media (max-width: 600px) {
+    .title h2 {
+        font-size: 20px; 
+    }
+
+    .go-home a {
+        font-size: 13px; 
+        padding: 6px 10px; 
+    }
+}
+.text{
+    text-align: center;
+}

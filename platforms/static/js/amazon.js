@@ -76,7 +76,7 @@ function downloadTemplate() {
 // uploading js code start================================================================================================
 async function uploadFile() {
     const token = localStorage.getItem('access');
-    console.log(token)
+    console.log(token);
     if (!token) {
         alert('No access token found. Please log in again.');
         window.location.href = '/login-page/';
@@ -98,30 +98,32 @@ async function uploadFile() {
 
         if (response.ok) {
             const data = await response.json();
+            document.getElementById('spinner').style.display = 'none';  // Hide spinner
+            enablePage();  // Enable the page again
+
             if (data.success) {
                 alert('File uploaded successfully.');
-                document.getElementById('spinner').style.display = 'none';  // Hide spinner after success
-                enablePage();  // Enable the page again
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000); 
-            } else if (!data.success) {
+                
+                // Show the session ID in the popup
+                document.getElementById('sessionIdText').textContent = data.sessionId;
+                document.getElementById('sessionModal').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+
+            } else {
                 alert('Error: ' + data.error);
-                document.getElementById('spinner').style.display = 'none';  // Hide spinner after failure
-                enablePage();  // Enable the page again
             }
         } else if (response.status === 401) {
             alert('Session expired. Please log in again.');
             window.location.href = '/login-page/';
         } else {
             const errorData = await response.json();
-            document.getElementById('spinner').style.display = 'none';  // Hide spinner on error
+            document.getElementById('spinner').style.display = 'none';  // Hide spinner
             enablePage();  // Enable the page again
             throw new Error(errorData.error || 'Failed to upload file.');
         }
     } catch (error) {
         console.error('Error:', error);
-        document.getElementById('spinner').style.display = 'none';  // Hide spinner on error
+        document.getElementById('spinner').style.display = 'none';  // Hide spinner
         enablePage();  // Enable the page again
 
         if (error.message.includes('Cannot read properties of undefined')) {
@@ -131,6 +133,13 @@ async function uploadFile() {
         }
     }
 }
+
+// Close modal function
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('sessionModal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+};
+
 
 
 

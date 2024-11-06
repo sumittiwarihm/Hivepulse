@@ -24,9 +24,7 @@ urlpatterns = [
     path('product-sentiment/', views.product_sentiment_view, name='product_sentiment_view'),
     path('download-excel/', views.download_excel, name='download_excel'),
     #---------------experiment----------------------------------------------------
-    path('session-input-playstore1/', views.sessionInputPlaystore1, name='sessionInputPlaystore1'),
-    path('session-input-playstore2/', views.sessionInputPlaystore2, name='sessionInputPlaystore2'),
-    path('session-input-playstore3/', views.sessionInputPlaystore3, name='sessionInputPlaystore3'),
+    path('session-input-playstore/', views.sessionInputPlaystore, name='sessionInputPlaystore1'),
     path('session-input-amazon/',views.sessionInputAmazon, name='sessionInputAmazon'),
     path('session-input-flipkart/',views.sessionInputFlipkart, name='sessionInputFlipkart'),
     # path('graph/', views.getDataForPlaystoreGraph, name='getDataForPlaystoreGraph'),
