@@ -23,13 +23,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
     # Set up Chrome options
         chrome_options = Options()
-        chrome_options.add_argument("--headless=new")  # Use the new headless mode
+        #chrome_options.add_argument("--headless=new")  # Use the new headless mode
         chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
         chrome_options.add_argument("--no-sandbox")  # Required for running as root on some systems
         chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
         chrome_options.add_argument("--window-size=1920,1080")  # Set a fixed window size
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36")  # User agent spoofing
-        
         sessionId = options['sessionId']
         username = options['username']
 
@@ -71,7 +70,7 @@ class Command(BaseCommand):
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f'Error fetching reviews for ASIN {Asin}: {e}'))
                     continue
-
+                
                 for page in range(1, num_pages + 1):
                     try:
                         page_url = f"https://www.amazon.in/product-reviews/{Asin}/ref=cm_cr_arp_d_viewopt_srt?ie=UTF8&reviewerType=all_reviews&sortBy=recent&pageNumber={page}"
