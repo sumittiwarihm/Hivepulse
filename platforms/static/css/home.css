@@ -254,7 +254,9 @@ body {
     font-size: 14px; /* Slightly reduced font size */
     border-radius: 5px;
     transition: background-color 0.3s ease;
-    margin-left: 8px; /* Slightly reduced margin */
+    margin-top: 4px;
+    margin-left: auto; /* Slightly reduced margin */
+    margin-bottom: 4px;
 }
 
 .topnav a:hover {
@@ -265,7 +267,7 @@ body {
 /* Username Display */
 .username {
     color: #e9c46a;
-    margin-left: 10px; /* Adjusted margin */
+    margin-left: auto; /* Adjusted margin */
     font-weight: bold;
     padding: 6px 12px; /* Adjusted padding */
     border-radius: 5px;

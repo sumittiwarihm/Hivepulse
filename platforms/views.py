@@ -104,6 +104,7 @@ def playstorePage(request):
 
 
 
+
 # redirect code end -------------------------------------------------------------------------------------
 
 
@@ -154,7 +155,8 @@ class uploadAmazon(APIView):
                 # Get username of the logged-in user
                 username = request.user.username
                 # Generate session ID as a string representation of the current time
-                session_id = datetime.now().strftime('%Y%m%d%H%M%S')  # e.g., '20230829103015'
+                session_id = datetime.now().strftime('%Y%m%d%H%M%S')+"_amazon"  # e.g., '20230829103015'
+                
                 for row in ws.iter_rows(min_row=2, values_only=True):
                     Asin, Brand = row
                     if Asin and Brand:
@@ -269,7 +271,7 @@ class uploadFlipkart(APIView):
                 if not data_rows:
                     return JsonResponse({'success': False, 'error': 'No data filled in your Excel file.'})
                 username=request.user.username
-                session_id=datetime.now().strftime('%Y%m%d%H%M%S')
+                session_id=datetime.now().strftime('%Y%m%d%H%M%S')+"_flipkart"
                 for row in ws.iter_rows(min_row=2, values_only=True):
                     Fsn, Brand = row
                     if Fsn and Brand:
@@ -374,7 +376,7 @@ class uploadPlaystore(APIView):
                     return JsonResponse({'success': False, 'error': 'No data filled in your Excel file.'})
                 username = request.user.username
                 # Generate session ID as a string representation of the current time
-                session_id = datetime.now().strftime('%Y%m%d%H%M%S') 
+                session_id = datetime.now().strftime('%Y%m%d%H%M%S')+"_playstore"
                 for row in ws.iter_rows(min_row=2, values_only=True):
                     AppId, Brand = row
                     playstoreProduct.objects.create(
