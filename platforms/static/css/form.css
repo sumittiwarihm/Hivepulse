@@ -13,99 +13,196 @@ body {
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
-    justify-content: space-between;
+}
+
+/* Container */
+.script-container {
+    display: flex;
+    justify-content: center; /* Changed from space-around to center */
+    align-items: center;
+    margin: 10px 15px;
+    gap: 15px;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.script-section {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px; /* Limit the max width */
+    text-align: center;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+/* Progress Bar Container */
+.progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    position: relative;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+.progress-step{
+    margin-bottom: 5px;
+}
+.progress-bar {
+    width: 25%; /* Start at 25% for step 1 */
+    height: 10px;
+    background-color: #2a9d8f;
+    transition: width 0.3s ease;
+}
+
+.progress-step {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    color: #264653;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+    justify-content: center; /* Center content vertically if needed */
+    width: 100%;
 }
 
 /* Title */
 .title {
     background-color: #264653;
     color: #e9c46a;
+    width: 100%; /* Make header full width */
     padding: 15px 20px;
     text-align: center;
     margin-bottom: 20px;
 }
 
-.title h2 {
-    font-size: 24px;
+.title .logo h2 {
+    font-size: 32px;
     font-weight: bold;
     margin: 0;
+}
+
+.title h4 {
+    font-size: 24px;
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+    color: #e9c46a;
+}
+body {
+    overflow: hidden; /* Hide scrollbars */
+  }
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+/* Flex adjustments for header */
+.title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo, .title .go-home {
+    flex: 0 0 auto;
 }
 
 /* Content Container */
 .content-container {
     display: flex;
-    justify-content: space-around;
+    flex-direction: column; /* Stack elements vertically */
     align-items: center;
+    justify-content: center;
     margin: 10px 15px;
-    gap: 15px;
-    flex-wrap: nowrap; /* Ensure boxes are aligned horizontally */
+    width: 100%;
 }
 
-.download-section, .upload-section {
+.download-section, .upload-section, .script-section {
     background-color: #fff;
-    padding: 20px;
+    padding: 30px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 45%;
+    width: 100%;
+    max-width: 800px; /* Limit the max width */
     text-align: center;
+    margin-bottom: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
-.download-section:hover, .upload-section:hover {
-    transform: translateY(-5px); /* Slightly lift the section */
+.download-section:hover, .upload-section:hover, .script-section:hover {
+    transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    background-color: #f0f0f0; /* Slight background color change on hover */
+    background-color: #f0f0f0;
 }
 
-.download-section h2, .upload-section h2 {
+.download-section h2, .upload-section h2, .script-section h2 {
     color: #264653;
-    margin-bottom: 15px;
-    font-size: 20px;
+    margin-bottom: 20px;
+    font-size: 28px;
 }
 
-.download-section button, .upload-section button {
-    padding: 10px 15px;
+.download-section button, .upload-section button, .script-section button {
+    padding: 12px 20px;
     background-color: #2a9d8f;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    font-size: 14px;
-    margin-top: 15px;
+    font-size: 16px;
+    margin-top: 20px;
+    width: auto;
 }
 
-.download-section button:hover, .upload-section button:hover {
+.download-section button:hover, .upload-section button:hover, .script-section button:hover {
     background-color: #e76f51;
 }
 
-input[type="file"] {
-    padding: 8px;
+input[type="file"], input[type="text"] {
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    margin-top: 10px;
+    margin-top: 15px;
     width: 80%;
+    max-width: 400px;
 }
 
-/* Go Home */
-.go-home {
-    text-align: center;
-    margin-top: 20px;
+input[type="text"] {
+    width: 80%;
+    max-width: 400px;
 }
 
-.go-home a {
-    display: inline-block;
-    padding: 10px 15px;
-    background-color: #2a9d8f;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-    font-size: 14px;
+.script-section label {
+    display: block;
+    margin-bottom: 10px;
+    color: #264653;
+    font-weight: bold;
+    font-size: 18px;
 }
 
-.go-home a:hover {
-    background-color: #e76f51;
+.script-section p {
+    margin-top: 15px;
+    color: #264653;
+    font-size: 16px;
 }
 
 /* Spinner */
@@ -115,126 +212,117 @@ input[type="file"] {
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 1000;
-    display: none; /* Hidden by default */
+    display: none;
 }
 
-/* Script Container */
-.script-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin: 10px 15px;
-    gap: 15px;
-    flex-wrap: nowrap; /* Ensure boxes are aligned horizontally */
-}
-
-.script-section {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 45%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-}
-
-.script-section:hover {
-    transform: translateY(-5px); /* Slightly lift the section */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    background-color: #f0f0f0; /* Slight background color change on hover */
-}
-
-.script-section button {
-    padding: 10px 15px;
-    background-color: #2a9d8f;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-size: 14px;
-    margin-top: 10px;
-    width: 100%;
-}
-
-.script-section button:hover {
-    background-color: #e76f51;
-}
-
-.script-section p {
-    margin-top: 10px;
-    color: #264653;
-    font-size: 12px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .content-container, .script-container {
-        flex-wrap: wrap; /* Allow wrapping for smaller screens */
-        flex-direction: column; /* Stack vertically on small screens */
-        gap: 20px;
-    }
-
-    .download-section, .upload-section, .script-section {
-        width: 90%; /* Full width on small screens */
-    }
-}
-
-@media (max-width: 480px) {
-    .title h2 {
-        font-size: 20px;
-    }
-
-    .download-section h2, .upload-section h2, .script-section p {
-        font-size: 16px;
-    }
-
-    button {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-
-    .content-container, .script-container {
-        margin: 10px;
-    }
-}
-
-.title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap; 
-    padding: 10px 20px; 
-}
-
-.title h2 {
-    font-size: 24px;
-    color: #e9c46a;
-    margin: 5px 0;
-    flex-grow: 1; 
-}
-
+/* Go Home */
 .go-home {
-    display: flex;
-    justify-content: flex-end;
-    margin: 5px 0;
+    text-align: right;
 }
 
 .go-home a {
-    padding: 8px 12px; 
-    font-size: 14px; 
+    padding: 8px 12px;
+    background-color: transparent;
+    color: #e9c46a;
+    text-decoration: none;
+    border: 2px solid #e9c46a;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 16px;
 }
 
-@media (max-width: 600px) {
+.go-home a:hover {
+    background-color: #e9c46a;
+    color: #264653;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    margin: 10px 5px 0 5px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+/* Modal Popup */
+#sessionModal {
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+#sessionModal p {
+    font-size: 18px;
+    color: #264653;
+}
+
+#sessionModal #sessionIdText {
+    font-weight: bold;
+    color: #e76f51;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .download-section h2, .upload-section h2, .script-section h2 {
+        font-size: 24px;
+    }
+
+    .title h4 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .title {
+        flex-direction: column;
+    }
+
+    .title .logo, .title .go-home {
+        margin-bottom: 10px;
+    }
+
+    .title h4 {
+        margin-bottom: 10px;
+    }
+
+    .download-section h2, .upload-section h2, .script-section h2 {
+        font-size: 22px;
+    }
+
+    .download-section button, .upload-section button, .script-section button {
+        font-size: 14px;
+    }
+
+    input[type="file"], input[type="text"] {
+        width: 90%;
+    }
+}
+
+@media (max-width: 576px) {
+    .download-section h2, .upload-section h2, .script-section h2 {
+        font-size: 20px;
+    }
+
     .title h2 {
-        font-size: 20px; 
+        font-size: 28px;
+    }
+
+    .title h4 {
+        font-size: 18px;
     }
 
     .go-home a {
-        font-size: 13px; 
-        padding: 6px 10px; 
+        font-size: 14px;
+    }
+
+    .download-section button, .upload-section button, .script-section button {
+        padding: 8px 16px;
+        font-size: 14px;
     }
 }
-.text{
-    text-align: center;
+
+/* Additional Styling */
+.step {
+    width: 100%;
 }
+

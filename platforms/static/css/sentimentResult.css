@@ -7,7 +7,7 @@
 
 /* Body */
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family:  Arial, sans-serif;
     background-color: #f4f7f9;
     color: #333;
     display: flex;
@@ -69,6 +69,7 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     font-size: 16px;
+    margin-bottom: 20px;
 }
 
 .form-content button:hover {
@@ -83,7 +84,7 @@ body {
 }
 
 .table-container.expanded {
-    max-height: none; /* Remove height restriction when expanded */
+    max-height: none; 
 }
 
 .table-container table {
@@ -128,22 +129,105 @@ body {
     background-color: #0056b3;
 }
 
-/* Home Link */
-.go-home {
+.title {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100vw; 
+    padding: 20px 20px;
     text-align: center;
-    margin-top: 20px;
+    margin: 0; 
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+body {
+    margin-top: 80px; 
+}
+
+
+.title .logo h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #e9c46a;
+}
+
+
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo,
+.title .go-home {
+    flex: 0 0 auto;
+}
+/* Go Home */
+.go-home {
+    text-align: right;
 }
 
 .go-home a {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #2a9d8f;
-    color: white;
+    padding: 8px 12px;
+    background-color: transparent;
+    color: #e9c46a;
     text-decoration: none;
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
+    border: 2px solid #e9c46a;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 16px;
 }
 
 .go-home a:hover {
-    background-color: #e76f51;
+    background-color: #e9c46a;
+    color: #264653;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    margin: 10px 5px 0 5px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.download-button{
+    margin-bottom: 20px;
+    border-radius: 2px;
+}
+.download-button {
+    background-color: #4CAF50; /* Initial background color */
+    color: white; /* Initial text color */
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.download-button:hover {
+    background-color: #e9c46a;
+    color: #333; /* Darker text color on hover */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }

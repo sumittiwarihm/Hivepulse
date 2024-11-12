@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('loginLink').style.display = 'none';
                 document.getElementById('logoutButton').style.display = 'inline-block';
                 document.getElementById('username').style.display = 'inline-block';
+                document.getElementById('username').style.display = 'flex';
+                document.getElementById('username').style.justifyContent = 'center';
+                
                 document.getElementById('username').innerText = `Hello, ${username}`;
             } else {
                 // Token is invalid or expired

@@ -8,8 +8,15 @@
     <link rel="stylesheet" href="{% static 'css/sentimentResult.css' %}">
 </head>
 <body>
+    <div class="title">
+        <div class="go-home">
+            <a href="{% url 'home' %}">Home</a>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>Product Sentiment Analysis</h1>
+        <h1>Raw Sentiment Report</h1>
+        
         <form method="POST" class="form-content">
             {% csrf_token %}
             <label for="platform">Select Platform:</label>
@@ -26,67 +33,64 @@
 
             <button type="submit">Get Sentiment Results</button>
         </form>
-        <div class="go-home">
-            <a href="{% url 'home' %}">Home</a>
-        </div>
+
         {% if results %}
-    <h2>Results:</h2>
-    
-    <!-- Download button at the top -->
-    <form action="{% url 'download_excel' %}" method="POST" style="margin-bottom: 20px;">
-        {% csrf_token %}
-        <input type="hidden" name="platform" value="{{ platform }}">
-        <input type="hidden" name="sessionId" value="{{ sessionId }}">
-        <button type="submit" class="download-button">Download as Excel</button>
-    </form>
+            <!-- Download button at the top -->
+            <form action="{% url 'download_excel' %}" method="POST" class="download-form">
+                {% csrf_token %}
+                <input type="hidden" name="platform" value="{{ platform }}">
+                <input type="hidden" name="sessionId" value="{{ sessionId }}">
+                <button type="submit" class="download-button">Download as Excel</button>
+            </form>
 
-    <div class="table-container">
-        <table border="1">
-            <tr>
-                <th>ID</th>
-                <th>Brand</th>
-                <th>Comment</th>
-                <th>Sentiment Result</th>
-                <th>Rating</th>
-                <th>Positive Score</th>
-                <th>Neutral Score</th>
-                <th>Negative Score</th>
-            </tr>
-            {% for ID, Brand, comment, sentiment, rating, positiveScore, neutralScore, negativeScore in results %}
-            <tr>
-                <td>{{ ID }}</td>
-                <td>{{ Brand }}</td>
-                <td>{{ comment }}</td>
-                <td>{{ sentiment }}</td>
-                <td>{{ rating }}</td>
-                <td>{{ positiveScore }}</td>
-                <td>{{ neutralScore }}</td>
-                <td>{{ negativeScore }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
-    
-    <div id="viewMoreContainer" class="view-more-container">
-        <button id="viewMoreButton" class="view-more-button" onclick="toggleViewMore()">View More</button>
-    </div>
-{% elif error %}
-    <p>{{ error }}</p>
-{% endif %}
-
-    
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Brand</th>
+                            <th>Comment</th>
+                            <th>Sentiment Result</th>
+                            <th>Rating</th>
+                            <th>Positive Score</th>
+                            <th>Neutral Score</th>
+                            <th>Negative Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ID, Brand, comment, sentiment, rating, positiveScore, neutralScore, negativeScore in results %}
+                        <tr>
+                            <td>{{ ID }}</td>
+                            <td>{{ Brand }}</td>
+                            <td>{{ comment }}</td>
+                            <td>{{ sentiment }}</td>
+                            <td>{{ rating }}</td>
+                            <td>{{ positiveScore }}</td>
+                            <td>{{ neutralScore }}</td>
+                            <td>{{ negativeScore }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="view-more-container">
+                <button id="viewMoreButton" class="view-more-button" onclick="toggleViewMore()">View More</button>
+            </div>
+        {% elif error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
     </div>
 
     <script>
         function showInputField(platform) {
             let inputField = document.getElementById('inputField');
             inputField.innerHTML = '';
-            if (platform === 'amazon') {
-                inputField.innerHTML = '<label for="sessionId">Put your sessionId:</label><input type="text" name="sessionId" id="sessionId" required>';
-            } else if (platform === 'flipkart') {
-                inputField.innerHTML = '<label for="sessionId">Put your sessionId:</label><input type="text" name="sessionId" id="sessionId" required>';
-            } else if (platform === 'playstore') {
-                inputField.innerHTML = '<label for="sessionId">Put your sessionId:</label><input type="text" name="sessionId" id="sessionId" required>';
+            if (platform === 'amazon' || platform === 'flipkart' || platform === 'playstore') {
+                inputField.innerHTML = `
+                    <label for="sessionId">Enter your Session ID:</label>
+                    <input type="text" name="sessionId" id="sessionId" required>
+                `;
             }
         }
 
@@ -103,4 +107,3 @@
     </script>
 </body>
 </html>
-

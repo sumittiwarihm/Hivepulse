@@ -4,81 +4,178 @@
 <html>
 <head>
     <title>Submit Report</title>
+    <!-- Existing CSS -->
     <link rel="stylesheet" href="{% static 'css/form.css' %}">
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+<style>
+    .title {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100vw; 
+    padding: 20px 20px;
+    text-align: center;
+    margin: 0; 
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+body {
+    margin-top: 80px; 
+}
+
+
+.title .logo h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #e9c46a;
+}
+
+
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo,
+.title .go-home {
+    flex: 0 0 auto;
+}
+</style>
 <body>
-    <div>
-        <div class="title" style="display: flex ; justify-content:space-between ;">
-            <div class="logo">
-            <h2>HivePulse</h2>
-        </div>
-            <h4>Download/Upload Page</h4>
+    <div class="title" style="display: flex ; justify-content:space-between ;">
+        <div class="logo">
             <div class="go-home">
                 <a href="{% url 'home' %}">Home</a>
             </div>
+        </div>   
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+     
+        <div class="progress-step">
+            Step <span id="current-step">1</span> of 4 in progress
         </div>
-        <div class="content-container">
-            <div class="download-section">
-                <h2>Download Excel Template</h2>
-                <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
+    </div>
+    
+    <div class="container">
+        <!-- Title Section -->
+       
+
+        <!-- Step 1: Download Template -->
+        <div id="step-1" class="step">
+            <div class="content-container">
+                <div class="download-section">
+                    <h2>Download Excel Template</h2>
+                    <button id="downloadTemplateButton" onclick="downloadTemplate()">Download Template</button>
+                    <br><br>
+                    <button class="btn btn-primary" onclick="goToNextStep(1)">Next</button>
+                </div>
             </div>
         </div>
-        <div class="content-container">
-            <div class="upload-section">
-                <h2>Upload Filled Excel File</h2>
-                <form id="uploadForm"  enctype="multipart/form-data" >
-                    {% csrf_token %}
-                    <input type="file" name="file" required>
-                    <button id="uploadButton" type="button" onclick="uploadFile()">Upload</button>
-                </form>
+
+        <!-- Step 2: Upload Template -->
+        <div id="step-2" class="step" style="display: none;">
+            <div class="content-container">
+                <div class="upload-section">
+                    <h2>Upload Filled Excel File</h2>
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file" name="file" required>
+                        <button id="uploadButton" type="button" onclick="uploadFile()">Upload</button>
+                    </form>
+                    <br>
+                    <button class="btn btn-secondary" onclick="goToPreviousStep(2)">Previous</button>
+                    <button class="btn btn-primary" onclick="goToNextStep(2)">Next</button>
+                </div>
             </div>
         </div>
-        
-    </div>
-    <div id="spinner">
-        <svg xmlns="http://www.w3.org/2000/svg" style="margin: auto; background: none; display: block;" width="50px" height="50px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
-            <circle cx="50" cy="50" fill="none" stroke="#000" stroke-width="10" r="35" stroke-dasharray="164.93361431346415 56.97787143782138">
-                <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" keyTimes="0;1" values="0 50 50;360 50 50"></animateTransform>
-            </circle>
-        </svg>
-    </div>
-    <div class="text">
-       <b>*</b>After uploading the filled excel file in proper format go ahead and run script for getting review and processing those reviews.
-    </div>
-    <div class="script-container">
-        <!-- Left Side: Run Scrapping Script -->
-        <div class="script-section">
-            <label for="scrapping-session-id">Session ID:</label>
-            <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
-            <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Script for processing your uploaded ASINs and getting reviews</button>
-            <p id="scrappingScript-status"></p>
-        </div>
-        
-        <!-- Right Side: Run Sentiment Script -->
-        <div class="script-section">
-            <label for="sentiment-session-id">Session ID:</label>
-            <input type="text" id="sentiment-session-id" name="sentiment-session-id" placeholder="Enter Session ID">
-            <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Script for processing  your reviews and saving sentiment </button>
-            <p id="sentimentScript-status"></p>
-        </div>
-    </div>
-    <!-- Modal Popup -->
-<div id="sessionModal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-    <span id="closeModal" style="cursor: pointer; float: right; font-size: 20px;">&times;</span>
-    <p>Genrated sessionId for your uploaded file furthure operation you can do with this id one copy of this is also sent to your mail <br>:-></br><span id="sessionIdText"></span></p>
-</div>
-<!-- Overlay -->
-<div id="overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
 
+        <!-- Step 3: Run Scrapping Script -->
+        <div id="step-3" class="step" style="display: none;">
+            <div class="script-container">
+                <div class="script-section">
+                    <label for="scrapping-session-id">Session ID:</label>
+                    <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
+                    <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Scrapping Script</button>
+                    <p id="scrappingScript-status"></p>
+                    <br>
+                    <button class="btn btn-secondary" onclick="goToPreviousStep(3)">Previous</button>
+                    <button class="btn btn-primary" onclick="goToNextStep(3)">Next</button>
+                </div>
+            </div>
+        </div>
 
+        <!-- Step 4: Run Sentiment Script -->
+        <div id="step-4" class="step" style="display: none;">
+            <div class="script-container">
+                <div class="script-section">
+                    <label for="sentiment-session-id">Session ID:</label>
+                    <input type="text" id="sentiment-session-id" name="sentiment-session-id" placeholder="Enter Session ID">
+                    <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Sentiment Script</button>
+                    <p id="sentimentScript-status"></p>
+                    <br>
+                    <button class="btn btn-secondary" onclick="goToPreviousStep(4)">Previous</button>
+                    <button class="btn btn-success" onclick="finishProcess()">Finish</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spinner -->
+        <div id="spinner">
+            <!-- Spinner SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" style="margin: auto; background: none; display: block;" width="50px" height="50px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+                <circle cx="50" cy="50" fill="none" stroke="#000" stroke-width="10" r="35" stroke-dasharray="164.93361431346415 56.97787143782138">
+                    <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" keyTimes="0;1" values="0 50 50;360 50 50"></animateTransform>
+                </circle>
+            </svg>
+        </div>
+
+        <!-- Modal Popup -->
+        <div id="sessionModal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <span id="closeModal" style="cursor: pointer; float: right; font-size: 20px;">&times;</span>
+            <p>
+                Generated session ID for your uploaded file. Further operations can be done with this ID. A copy has also been sent to your email.<br>
+                <strong>Session ID: </strong><span id="sessionIdText"></span>
+            </p>
+        </div>
+        <!-- Overlay -->
+        <div id="overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999;"></div>
+    </div>
+
+    <!-- Include Bootstrap JS dependencies -->
+    <script src="{% static 'js/script.js' %}"></script>
+    <script>
+        const downloadTemplateUrl = "{% url 'downloadAmazonExcelTemplate' %}";
+        const uploadAmazonUrl = "{% url 'uploadAmazon' %}";
+        const runScrappingScriptUrl = "{% url 'runAmazonReviewScrappingScript' %}";
+        const csrfToken = "{{ csrf_token }}";
+        const runSentimentUrl = "{% url 'runAmazonReviewSentimentScript' %}";
+    </script>
+    <script src="{% static 'js/amazon.js' %}"></script>
+    <!-- Include Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script> <!-- Use version compatible with Bootstrap 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
-<script src="{% static 'js/script.js' %}"></script>
-<script>
-    const downloadTemplateUrl = "{% url 'downloadAmazonExcelTemplate' %}";
-    const uploadAmazonUrl = "{% url 'uploadAmazon' %}";
-    const runScrappingScriptUrl = "{% url 'runAmazonReviewScrappingScript' %}";
-    const csrfToken = "{{ csrf_token }}";
-    const runSentimentUrl = "{% url 'runAmazonReviewSentimentScript' %}";
-</script>
-<script src="{% static 'js/amazon.js' %}"></script>

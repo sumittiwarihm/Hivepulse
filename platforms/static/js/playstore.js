@@ -1,3 +1,68 @@
+// Variables to track progress
+let isScriptRunning = false;
+let fileUploaded = false;
+let scrapingScriptRun = false;
+let sentimentScriptRun = false;
+let currentStep = 1;
+function updateProgressBar(step) {
+    const progressBar = document.getElementById('progress-bar');
+    const currentStepText = document.getElementById('current-step');
+    const totalSteps = 4;
+    const percentage = (step / totalSteps) * 100;
+    progressBar.style.width = percentage + '%';
+    currentStepText.innerText = step;
+}
+// Function to go to the next step
+function goToNextStep(currentStep) {
+    var currentStepDiv = document.getElementById('step-' + currentStep);
+    var nextStepDiv = document.getElementById('step-' + (currentStep + 1));
+
+    if (currentStep === 1) {
+        // No validation needed for step 1
+        currentStepDiv.style.display = 'none';
+        nextStepDiv.style.display = 'block';
+        updateProgressBar(currentStep + 1);
+    } else if (currentStep === 2) {
+        // Validate that the file has been uploaded before moving to next step
+        if (fileUploaded) {
+            currentStepDiv.style.display = 'none';
+            nextStepDiv.style.display = 'block';
+            updateProgressBar(currentStep + 1);
+        } else {
+            alert('Please upload the file before proceeding to the next step.');
+        }
+    } else if (currentStep === 3) {
+        // Validate that the scraping script has been run successfully
+        if (scrapingScriptRun) {
+            currentStepDiv.style.display = 'none';
+            nextStepDiv.style.display = 'block';
+            updateProgressBar(currentStep + 1);
+        } else {
+            alert('Please run the scraping script before proceeding to the next step.');
+        }
+    }
+}
+
+// Function to go to the previous step
+function goToPreviousStep(currentStep) {
+    var currentStepDiv = document.getElementById('step-' + currentStep);
+    var previousStepDiv = document.getElementById('step-' + (currentStep - 1));
+    currentStepDiv.style.display = 'none';
+    previousStepDiv.style.display = 'block';
+}
+
+// Function to handle 'Finish' button
+function finishProcess() {
+    if (sentimentScriptRun) {
+        alert('Process completed!');
+        // Redirect to home or wherever you want
+        window.location.href = '/';
+    } else {
+        alert('Please complete the previous steps before finishing.');
+    }
+}
+
+// Common Functions
 function disablePage() {
     console.log("Disabling page...");
     document.querySelectorAll('button, input, a').forEach(element => {
@@ -8,28 +73,25 @@ function disablePage() {
 }
 
 function enablePage() {
-    console.log("enabling page....")
+    console.log("Enabling page...");
     document.querySelectorAll('button, input, a').forEach(element => {
         element.disabled = false;
         element.style.pointerEvents = 'auto';
         element.style.opacity = '1';
     });
-    isScriptRunning=false
+    isScriptRunning = false;
 }
 
-
-//--------------------------------------------------common code end---------------------------------------------------------------
-
-
-
-
+// Download Template
 function downloadTemplate() {
-    const token = localStorage.getItem('access');  // Get the access token from local storage
+    const token = localStorage.getItem('access');
     if (!token) {
         alert('No access token found. Please log in again.');
         window.location.href = '/login-page/';
         return;
     }
+
+    disablePage();
     fetch(downloadTemplateUrl, {
         method: 'GET',
         headers: {
@@ -43,7 +105,7 @@ function downloadTemplate() {
         }
         if (response.ok) {
             return response.blob();
-        }  else {
+        } else {
             return response.json().then(error => {
                 throw new Error(error.error || 'Failed to download');
             });
@@ -57,15 +119,16 @@ function downloadTemplate() {
         document.body.appendChild(a);
         a.click();
         a.remove();
-        window.URL.revokeObjectURL(url); // Clean up the URL object
+        window.URL.revokeObjectURL(url);
+        enablePage();
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        console.error('Error:', error);
+        enablePage();
+    });
 }
 
-
-//------------------------------------------------------------upload file code----------------------------------------------
-
-
+// Upload File
 async function uploadFile() {
     const token = localStorage.getItem('access');
     if (!token) {
@@ -73,63 +136,62 @@ async function uploadFile() {
         window.location.href = '/login-page/';
         return;
     }
-
+    
     const formData = new FormData(document.getElementById('uploadForm'));
-    document.getElementById('spinner').style.display='block';
-    disablePage()
+    document.getElementById('spinner').style.display = 'block';
+    disablePage();
     try {
         const response = await fetch(uploadPlaystoreUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value // If needed
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             },
             body: formData
         });
 
         if (response.ok) {
             const data = await response.json();
+            document.getElementById('spinner').style.display = 'none';
+            enablePage();
+
             if (data.success) {
                 alert('File uploaded successfully.');
-                document.getElementById('spinner').style.display = 'none'; 
-                enablePage();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000); 
+                fileUploaded = true;
+                // Show the session ID in the popup
+                document.getElementById('sessionIdText').textContent = data.sessionId;
+                document.getElementById('sessionModal').style.display = 'block';
+                document.getElementById('overlay').style.display = 'block';
+                // Auto-fill the session ID in the next steps
+                document.getElementById('scrapping-session-id').value = data.sessionId;
+                document.getElementById('sentiment-session-id').value = data.sessionId;
             } else {
                 alert('Error: ' + data.error);
-                document.getElementById('spinner').style.display = 'none';  // Hide spinner after failure
-                enablePage(); 
             }
         } else if (response.status === 401) {
             alert('Session expired. Please log in again.');
             window.location.href = '/login-page/';
         } else {
             const errorData = await response.json();
+            document.getElementById('spinner').style.display = 'none';
+            enablePage();
             throw new Error(errorData.error || 'Failed to upload file.');
         }
     } catch (error) {
         console.error('Error:', error);
-        document.getElementById('spinner').style.display = 'none';  // Hide spinner after failure
+        document.getElementById('spinner').style.display = 'none';
         enablePage();
-        if (error.message.includes('Cannot read properties of undefined')) {
-            alert('An unexpected error occurred. Please try again later.');
-        } else {
-            alert('An error occurred: ' + error.message);
-        }
+        alert('An error occurred: ' + error.message);
     }
 }
 
-//----------------------------running scrapping script------------------------------------------------------------------------
-
-window.onbeforeunload = function () {
-    if (isScriptRunning) {
-        return "Are you sure you want to refresh? Your ongoing operation will be stopped.";
-    }
+// Close Modal Function
+document.getElementById('closeModal').onclick = function() {
+    document.getElementById('sessionModal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
 };
-let isScriptRunning = false;
 
-
+// Run Scrapping Script
 function runScrappingScript() {
     const token = localStorage.getItem('access');
     if (!token) {
@@ -137,14 +199,13 @@ function runScrappingScript() {
         window.location.href = '/login-page/';
         return;
     }
-    const sessionId=document.getElementById("scrapping-session-id").value
-    if(!sessionId){
-        alert('Type your sessionId');
-        return
+    const sessionId = document.getElementById("scrapping-session-id").value;
+    if (!sessionId) {
+        alert('Type your session ID');
+        return;
     }
-    isScriptRunning=true;
+    isScriptRunning = true;
     disablePage();
-    // Disable the button and show the spinner
     document.getElementById('run-scrappingScript-btn').disabled = true;
     document.getElementById('spinner').style.display = 'block';
     document.getElementById('scrappingScript-status').innerText = "Running...";
@@ -156,8 +217,8 @@ function runScrappingScript() {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             'Content-Type': 'application/json'
         },
-        body :JSON.stringify({
-            sessionId:sessionId,
+        body: JSON.stringify({
+            sessionId: sessionId,
         })
     })
     .then(response => {
@@ -170,7 +231,6 @@ function runScrappingScript() {
             document.getElementById('scrappingScript-status').style.backgroundColor = 'red';
             throw new Error('Network response was not ok');
         }
-        document.getElementById('scrappingScript-status').style.backgroundColor = 'green';
         return response.json();
     })
     .then(data => {
@@ -184,9 +244,9 @@ function runScrappingScript() {
         statusElement.style.border = '2px solid darkorange';
 
         if (data.status === 'success') {
-           console.log("success");
+            scrapingScriptRun = true;
         } else if (data.status === 'error') {
-            document.getElementById('run-scrappingScript-btn').disabled = false;  // Re-enable button if an error occurs
+            document.getElementById('run-scrappingScript-btn').disabled = false;
             document.getElementById('scrappingScript-status').style.backgroundColor = 'orange';
         }
         enablePage();
@@ -195,42 +255,44 @@ function runScrappingScript() {
         console.error('Error:', error);
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('scrappingScript-status').innerText = "An error occurred.";
-        document.getElementById('run-scrappingScript-btn').disabled = false;  // Re-enable button if an error occurs
+        document.getElementById('run-scrappingScript-btn').disabled = false;
         document.getElementById('scrappingScript-status').style.backgroundColor = 'red';
         enablePage();
     });
 }
 
-
-function runSentimentScript(){
+// Run Sentiment Script
+function runSentimentScript() {
     const token = localStorage.getItem('access');
     if (!token) {
         alert('No access token found. Please log in again.');
         window.location.href = '/login-page/';
         return;
     }
-    const sessionId=document.getElementById("sentiment-session-id").value
-    if(!sessionId){
-        alert('Type your sessionId');
-        return
+    const sessionId = document.getElementById("sentiment-session-id").value;
+    if (!sessionId) {
+        alert('Type your session ID');
+        return;
     }
-    isScriptRunning=true;
+    isScriptRunning = true;
     disablePage();
     document.getElementById('spinner').style.display = 'block';
     document.getElementById('sentimentScript-status').innerText = "Running...";
+
     fetch(runSentimentUrl, {
-       method:'POST', 
+       method: 'POST', 
        headers: {
         'Authorization': `Bearer ${token}`,
         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
         'Content-Type': 'application/json'
        },
-       body:JSON.stringify({
-        sessionId:sessionId
-    })
+       body: JSON.stringify({
+           sessionId: sessionId,
+       })
     })
     .then(response => {
         if (response.status === 401) {
+            isScriptRunning = false;
             alert('Session expired. Please log in again.');
             window.location.href = '/login-page/';
             return;
@@ -239,7 +301,6 @@ function runSentimentScript(){
             document.getElementById('sentimentScript-status').style.backgroundColor = 'red';
             throw new Error('Network response was not ok');
         }
-        document.getElementById('sentimentScript-status').style.backgroundColor = 'green';
         return response.json();
     })
     .then(data => {
@@ -248,14 +309,14 @@ function runSentimentScript(){
         statusElement.innerText = data.message;
         statusElement.style.display = 'flex';
         statusElement.style.justifyContent = 'center';
-        statusElement.style.backgroundColor = 'orange';
+        statusElement.style.backgroundColor = 'green';
         statusElement.style.color = 'black';
         statusElement.style.border = '2px solid darkorange';
 
         if (data.status === 'success') {
-           console.log("success");
+            sentimentScriptRun = true;
         } else if (data.status === 'error') {
-            document.getElementById('run-sentimentScript-btn').disabled = false;  // Re-enable button if an error occurs
+            document.getElementById('run-sentimentScript-btn').disabled = false;
             document.getElementById('sentimentScript-status').style.backgroundColor = 'orange';
         }
         enablePage();
@@ -264,11 +325,15 @@ function runSentimentScript(){
         console.error('Error:', error);
         document.getElementById('spinner').style.display = 'none';
         document.getElementById('sentimentScript-status').innerText = "An error occurred.";
-        document.getElementById('run-sentimentScript-btn').disabled = false;  // Re-enable button if an error occurs
+        document.getElementById('run-sentimentScript-btn').disabled = false;
         document.getElementById('sentimentScript-status').style.backgroundColor = 'red';
         enablePage();
     });
-
 }
 
-
+// Warn user if script is running and they try to close/refresh
+window.onbeforeunload = function () {
+    if (isScriptRunning) {
+        return "Are you sure you want to refresh? Your ongoing operation will be stopped.";
+    }
+};

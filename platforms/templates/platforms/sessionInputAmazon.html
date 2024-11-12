@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sentiment Analysis Percentage Stacked Bar Chart</title>
+    <title>Sentiment Analysis Charts for Amazon Products</title>
     <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js"></script>
+
     <style>
         /* General Reset and Base Styles */
         * {
@@ -12,10 +13,11 @@
             box-sizing: border-box;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family:  Arial, sans-serif;
             background-color: #f9f9f9;
             color: #333;
             padding: 20px;
+            margin-top: 80px; /* Adjust for fixed header */
         }
         h1 {
             text-align: center;
@@ -56,6 +58,33 @@
         form button:hover {
             background-color: #45a049;
         }
+        /* Tabs */
+        .tab {
+            overflow: hidden;
+            background-color: #f1f1f1;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .tab button {
+            background-color: inherit;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            font-size: 17px;
+            transition: 0.3s;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #ccc;
+        }
+        .tabcontent {
+            display: none;
+        }
+        /* Responsive styles */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -70,81 +99,195 @@
                 max-width: 100%;
             }
         }
+        .title {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100vw; 
+    padding: 20px 20px;
+    text-align: center;
+    margin: 0; 
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+body {
+    margin-top: 80px; 
+}
+
+
+.title .logo h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #e9c46a;
+}
+
+
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo,
+.title .go-home {
+    flex: 0 0 auto;
+}
+/* Go Home */
+.go-home {
+    text-align: right;
+}
+
+.go-home a {
+    padding: 8px 12px;
+    background-color: transparent;
+    color: #e9c46a;
+    text-decoration: none;
+    border: 2px solid #e9c46a;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 16px;
+}
+
+.go-home a:hover {
+    background-color: #e9c46a;
+    color: #264653;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    margin: 10px 5px 0 5px;
+    font-size: 16px;
+    border-radius: 5px;
+}
     </style>
 </head>
 
 <body>
-    <h1>Sentiment Analysis for Products (Positive, Negative, Neutral)</h1>
-
+    <div class="title" style="display: flex ; justify-content:space-between ;">
+        <div class="go-home">
+            <a href="{% url 'home' %}">Home</a>
+        </div> 
+    </div>
+    <h1>Sentiment Analysis Charts for Amazon Products</h1>
     <form id="session-form" method="post">
         <label for="sessionId">Session ID:</label>
         <input type="text" id="sessionId" name="sessionId" required>
         <button type="submit">Submit</button>
     </form>
+    <!-- Tabs -->
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Tab1')" data-tab="Tab1">Category-wise for Every Product</button>
+        <button class="tablinks" onclick="openTab(event, 'Tab2')" data-tab="Tab2">Sentiment-wise for Every Product</button>
+        <button class="tablinks" onclick="openTab(event, 'Tab3')" data-tab="Tab3">Product-wise Sentiment</button>
+    </div>
 
-    <div id="chartContainer"></div>
+    <!-- Tab content -->
+    <div id="Tab1" class="tabcontent">
+        <div id="chartContainerTab1"></div>
+    </div>
+    <div id="Tab2" class="tabcontent">
+        <div id="chartContainerTab2"></div>
+    </div>
+    <div id="Tab3" class="tabcontent">
+        <div id="chartContainerTab3"></div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" style="display: none;">
+        <p>Loading data, please wait...</p>
+    </div>
 
     <script>
+        // JavaScript code to handle tabs and data fetching
         document.getElementById('session-form').addEventListener('submit', function (event) {
             event.preventDefault();
-            
+
             const sessionId = document.getElementById('sessionId').value.trim();
             if (!sessionId) {
                 alert("Session ID is required!");
                 return;
             }
-            
+
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+
+            // Hide chart containers
+            document.getElementById('chartContainerTab1').innerHTML = '';
+            document.getElementById('chartContainerTab2').innerHTML = '';
+            document.getElementById('chartContainerTab3').innerHTML = '';
+
+            // Fetch data once and store it
             fetch('{% url "getDataForAmazonCategorization" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    // Include CSRF token if required by your backend
+                    'X-CSRFToken': getCookie('csrftoken') 
                 },
                 body: JSON.stringify({ sessionId: sessionId })
             })
-                .then(response => {
-                    if (response.status === 404) {
-                        throw new Error("No data found for the given sessionId");
-                    }
-                    if (!response.ok) {
-                        throw new Error(`Network response was not ok (${response.status})`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-                        const chartData = data.data.map(product => {
-                            const total = product.totalPositive + product.totalNegative + product.totalNeutral;
-                            const positivePercentage = total > 0 ? (product.totalPositive / total) * 100 : 0;
-                            const negativePercentage = total > 0 ? (product.totalNegative / total) * 100 : 0;
-                            const neutralPercentage = total > 0 ? (product.totalNeutral / total) * 100 : 0;
-                            return {
-                                brand: product.brand,
-                                Positive: positivePercentage,
-                                Negative: negativePercentage,
-                                Neutral: neutralPercentage,
-                                total: total
-                            };
-                        });
-
-                        renderPercentageStackedBarChart(chartData);
+            .then((response) => {
+                if (response.status === 404) {
+                    throw new Error("No data found for the given sessionId");
+                }
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok (${response.status})`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                    window.fetchedData = data.data; // Store data globally
+                    // Render the current tab if
+                    var activeTab = document.querySelector('.tab button.active');
+                    if (activeTab) {
+                        var tabName = activeTab.getAttribute('data-tab');
+                        openTab(null, tabName);
                     } else {
-                        alert("No data available for the given session.");
-                        clearChart();
+                        // Open Tab1 by default if no tab is active
+                        openTab(null, 'Tab1');
                     }
-                })
-                .catch(error => {
-                    alert("Error fetching data: " + error);
-                    clearChart();
-                });
+                } else {
+                    alert("No data available for the given session.");
+                    // Clear chart containers
+                }
+            })
+            .catch(error => {
+                alert("Error fetching data: " + error);
+            })
+            .finally(() => {
+                // Hide loading indicator
+                document.getElementById('loading').style.display = 'none';
+            });
         });
 
         function getCookie(name) {
+            // Function to get CSRF token (example for Django)
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
@@ -154,15 +297,319 @@
             return cookieValue;
         }
 
-        function clearChart() {
-            const chartContainer = document.getElementById('chartContainer');
-            chartContainer.innerHTML = '';
+        function openTab(evt, tabName) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+            // Hide all tabcontent
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            // Remove "active" class from all tablinks
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab
+            document.getElementById(tabName).style.display = "block";
+
+            // Add "active" class to the button that opened the tab
+            if (evt) {
+                evt.currentTarget.className += " active";
+            } else {
+                // If evt is null, find the button corresponding to tabName and add "active"
+                for (i = 0; i < tablinks.length; i++) {
+                    if (tablinks[i].getAttribute('onclick').includes(tabName)) {
+                        tablinks[i].className += " active";
+                    }
+                }
+            }
+            // Render the chart for the tab
+            if (window.fetchedData) {
+                if (tabName === 'Tab1') {
+                    renderTab1Charts(window.fetchedData);
+                } else if (tabName === 'Tab2') {
+                    renderTab2Charts(window.fetchedData);
+                } else if (tabName === 'Tab3') {
+                    renderTab3Charts(window.fetchedData);
+                }
+            }
         }
 
-        function renderPercentageStackedBarChart(data) {
-            const chartContainer = document.getElementById('chartContainer');
-            chartContainer.innerHTML = '';
+        // By default, open Tab1
+        document.addEventListener("DOMContentLoaded", function(){
+            openTab(null, 'Tab1');
+        });
 
+        // Implement the render functions for each tab
+        function renderTab1Charts(data) {
+            const categoryObject = data[0].category;
+            const categories = Object.keys(categoryObject);
+            const chartContainer = document.getElementById('chartContainerTab1');
+            chartContainer.innerHTML = '';  // Clear previous charts
+
+            function calculatePercentage(count, total) {
+                if (total === 0) {
+                    return 0;
+                }
+                return (count) / total * 100;
+            }
+
+            categories.forEach(category => {
+                const chartData = [];
+
+                data?.forEach(product => {
+                    const totalReviews = product.totalPositive + product.totalNegative + product.totalNeutral;
+
+                    if (totalReviews === 0) {
+                        return;
+                    }
+
+                    const categoryData = product.category[category] || { positive: 0, negative: 0, neutral: 0 };
+
+                    chartData.push({
+                        brand: product.brand,
+                        positive: calculatePercentage(categoryData.positive, product.totalPositive),
+                        negative: calculatePercentage(categoryData.negative, product.totalNegative),
+                        neutral: calculatePercentage(categoryData.neutral, product.totalNeutral),
+                    });
+                });
+
+                if (chartData.length === 0) {
+                    return;
+                }
+
+                const chartDiv = document.createElement('div');
+                chartContainer.appendChild(chartDiv);
+
+                const options = {
+                    container: chartDiv,
+                    data: chartData,
+                    series: [
+                        { 
+                            type: 'column',  // Vertical bars
+                            xKey: 'brand', 
+                            yKey: 'positive', 
+                            yName: 'Positive',
+                            fill: 'green',
+                            label: {
+                                enabled: true,
+                                color: 'black',
+                                fontSize: 8,
+                                formatter: function(params) {
+                                    return params.value.toFixed(1) + '%';
+                                }
+                            },
+                            tooltip: { enabled: true }
+                        },
+                        { 
+                            type: 'column', 
+                            xKey: 'brand', 
+                            yKey: 'negative', 
+                            yName: 'Negative', 
+                            fill: 'red',
+                            label: {
+                                enabled: true,
+                                color: 'black',
+                                fontSize: 8,
+                                formatter: function(params) {
+                                    return params.value.toFixed(1) + '%';
+                                }
+                            },
+                            tooltip: { enabled: true }
+                        },
+                        { 
+                            type: 'column', 
+                            xKey: 'brand', 
+                            yKey: 'neutral', 
+                            yName: 'Neutral', 
+                            fill: 'gray',
+                            label: {
+                                enabled: true,
+                                color: 'black',
+                                fontSize: 8,
+                                formatter: function(params) {
+                                    return params.value.toFixed(1) + '%';
+                                }
+                            },
+                            tooltip: { enabled: true }
+                        }
+                    ],
+                    title: { text: `Comparison of ${category} for Different Products` },
+                    axes: [
+                        {
+                            type: 'category',
+                            position: 'bottom',
+                            label: {
+                                fontSize: 10,
+                                rotation: -45  // Rotates the x-axis labels
+                            }
+                        },
+                        {
+                            type: 'number',
+                            position: 'left',
+                            title: { text: 'Percentage' }
+                        }
+                    ]
+                };
+
+                agCharts.AgChart.create(options);
+            });
+        }
+
+        function renderTab2Charts(data) {
+    const chartContainer = document.getElementById('chartContainerTab2');
+    chartContainer.innerHTML = '';  // Clear previous charts
+
+    // Define a color mapping for categories
+    const categoryColors = {
+        'Value & Affordability': '#3498db',
+        'Delivery & Service': '#e67e22',
+        'Product Quality': '#e74c3c',
+        'Appearance & Presentation': '#2ecc71',
+    };
+
+    // Helper function to capitalize the first letter
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // Helper function to format category names
+    function formatCategoryName(category) {
+        // Replace camelCase or PascalCase with space-separated words and retain &
+        return category
+            .replace(/([A-Z])/g, ' $1') // Add space before uppercase letters
+            .replace(/&/g, ' & ') // Ensure spaces around &
+            .split(' ') // Split into words
+            .map(word => capitalizeFirstLetter(word)) // Capitalize each word
+            .join(' ') // Rejoin into a single string
+            .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+            .trim();
+    }
+
+    // Helper function to get sentiment color
+    function getSentimentColor(sentiment) {
+        const sentimentColors = {
+            'positive': '#4CAF50', // Green
+            'negative': '#F44336', // Red
+            'neutral': '#9E9E9E'   // Gray
+        };
+        return sentimentColors[sentiment] || '#000000'; // default to black if not found
+    }
+
+    // Calculate percentage
+    function calculatePercentage(count, total) {
+        if (total === 0) {
+            return 0;
+        }
+        return (count / total) * 100;
+    }
+
+    data.forEach(product => {
+        ['positive', 'negative', 'neutral'].forEach(sentimentType => {
+            const chartData = [];
+            const sentimentColor = getSentimentColor(sentimentType);
+            for (const category in product.category) {
+                if (product.category.hasOwnProperty(category)) {
+                    const categoryData = product.category[category];
+                    const sentimentKey = `total${capitalizeFirstLetter(sentimentType)}`;
+                    const count = product[sentimentKey];
+                    const formattedCategory = formatCategoryName(category);
+                    const percentage = calculatePercentage(categoryData[sentimentType], count);
+                    
+                    console.log('Original Category:', category);
+                    console.log('Formatted Category:', formattedCategory);
+                    console.log('Assigned Color:', categoryColors[formattedCategory] || '#bdc3c7');
+                    
+                    chartData.push({
+                        category: formattedCategory,
+                        value: percentage
+                    });
+                }
+            }
+
+            // Create a container for each chart
+            const chartDiv = document.createElement('div');
+            chartDiv.classList.add('chartDiv');
+            chartContainer.appendChild(chartDiv);
+
+            // Prepare fills array based on category colors
+            const fills = chartData.map(item => categoryColors[item.category] || '#bdc3c7'); // default color if not mapped
+
+            // Create the chart
+            agCharts.AgChart.create({
+                container: chartDiv,
+                autoSize: true,
+                data: chartData,
+                title: {
+                    text: `${capitalizeFirstLetter(sentimentType)} Sentiment for ${product.brand}`,
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    padding: { top: 10, bottom: 10 }
+                },
+                series: [{
+                    type: "pie",
+                    angleKey: "value",
+                    labelKey: "category",
+                    calloutLabelKey: "category",
+                    innerRadiusOffset: -50, // Makes it a donut chart
+                    innerRadius: 50,
+                    fills: fills,
+                    strokes: fills,
+                    sectorLabel: {
+                        color: sentimentType === 'neutral' ? 'black' : 'white',
+                        fontWeight: 'bold',
+                        formatter: (params) => {
+                            return `${params.datum.value.toFixed(1)}%`;
+                        }
+                    },
+                    calloutLabel: {
+                        enabled: true,
+                        formatter: (params) => {
+                            return `${params.datum.category}: ${params.datum.value.toFixed(1)}%`;
+                        },
+                        fontSize: 12,
+                        color: sentimentColor,
+                        background: {
+                            fill: 'rgba(255, 255, 255, 0.8)'
+                        },
+                        padding: 4
+                    }
+                }],
+                legend: {
+                    position: 'right',
+                    item: {
+                        paddingY: 4
+                    }
+                }
+            });
+        });
+    });
+}
+
+
+        function renderTab3Charts(data) {
+            const chartContainer = document.getElementById('chartContainerTab3');
+            chartContainer.innerHTML = '';  // Clear previous charts
+
+            // Prepare data for the 100% stacked bar chart
+            const chartData = data.map(product => {
+                const total = product.totalPositive + product.totalNegative + product.totalNeutral;
+                // Avoid division by zero
+                const positivePercentage = total > 0 ? (product.totalPositive / total) * 100 : 0;
+                const negativePercentage = total > 0 ? (product.totalNegative / total) * 100 : 0;
+                const neutralPercentage = total > 0 ? (product.totalNeutral / total) * 100 : 0;
+                return {
+                    brand: product.brand,
+                    Positive: positivePercentage,
+                    Negative: negativePercentage,
+                    Neutral: neutralPercentage,
+                    total: total
+                };
+            });
+
+            // Create the chart
             agCharts.AgChart.create({
                 container: chartContainer,
                 autoSize: true,
@@ -170,8 +617,9 @@
                     text: 'Sentiment Analysis per Product (Percentage)',
                     fontSize: 20
                 },
-                data: data,
+                data: chartData,
                 series: [
+                    // Positive Series
                     {
                         type: 'column',
                         xKey: 'brand',
@@ -182,11 +630,15 @@
                         stroke: '#388E3C',
                         label: {
                             enabled: true,
-                            formatter: params => `${params.yValue.toFixed(1)}%`,
+                            formatter: params => {
+                                const percentage = params.yValue;
+                                return `${percentage.toFixed(1)}%`;
+                            },
                             fontSize: 12,
                             color: 'white'
                         }
                     },
+                    // Negative Series
                     {
                         type: 'column',
                         xKey: 'brand',
@@ -197,11 +649,15 @@
                         stroke: '#D32F2F',
                         label: {
                             enabled: true,
-                            formatter: params => `${params.yValue.toFixed(1)}%`,
+                            formatter: params => {
+                                const percentage = params.yValue;
+                                return `${percentage.toFixed(1)}%`;
+                            },
                             fontSize: 12,
                             color: 'white'
                         }
                     },
+                    // Neutral Series
                     {
                         type: 'column',
                         xKey: 'brand',
@@ -212,7 +668,10 @@
                         stroke: '#FFA000',
                         label: {
                             enabled: true,
-                            formatter: params => `${params.yValue.toFixed(1)}%`,
+                            formatter: params => {
+                                const percentage = params.yValue;
+                                return `${percentage.toFixed(1)}%`;
+                            },
                             fontSize: 12,
                             color: 'black'
                         }
@@ -225,6 +684,10 @@
                         title: {
                             text: 'Brand',
                             fontSize: 16
+                        },
+                        label: {
+                            rotation: -45,
+                            fontSize: 12
                         }
                     },
                     {
@@ -236,16 +699,25 @@
                         },
                         min: 0,
                         max: 100,
-                        tick: { interval: 10 },
-                        label: { formatter: params => `${params.value}%` }
+                        tick: {
+                            interval: 10,
+                            formatter: params => `${params.value}%`
+                        },
+                        label: {
+                            formatter: params => `${params.value}%`
+                        }
                     }
                 ],
-                legend: { position: 'top' },
+                legend: {
+                    position: 'top'
+                },
                 tooltip: {
-                    renderer: params => ({
-                        title: params.datum.brand,
-                        content: `${params.yName}: ${params.yValue.toFixed(1)}%`
-                    })
+                    renderer: (params) => {
+                        return {
+                            title: params.xValue,
+                            content: `${params.yName}: ${params.yValue.toFixed(1)}%`
+                        };
+                    }
                 }
             });
         }

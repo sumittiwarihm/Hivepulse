@@ -5,9 +5,7 @@
     <title>Sentiment Analysis Charts</title>
     <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js"></script>
     <style>
-        /* Merged CSS styles from all pages */
 
-        /* General Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -15,7 +13,7 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family:  Arial, sans-serif;
             background-color: #f9f9f9;
             color: #333;
             padding: 20px;
@@ -27,7 +25,7 @@
             color: #4CAF50;
         }
 
-        /* Form Styles */
+   
         form {
             display: flex;
             justify-content: center;
@@ -67,7 +65,7 @@
             background-color: #45a049;
         }
 
-        /* Tab Styles */
+      
         .tab {
             overflow: hidden;
             background-color: #f1f1f1;
@@ -95,15 +93,12 @@
             background-color: #ccc;
         }
 
-        /* Tab content */
+      
         .tabcontent {
             display: none;
         }
 
-        /* Chart Container Styles */
-        /* Adjust as needed for each tab */
-
-        /* Media Queries for Responsiveness */
+     
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -117,14 +112,100 @@
                 width: 200px;
             }
 
-            .chart-container-wrapper > div {
-                max-width: 100%; /* Ensure full width on smaller screens */
-            }
+            /* .chart-container-wrapper > div {
+                max-width:: 
+            } */
         }
+        .title {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100vw; 
+    padding: 20px 20px;
+    text-align: center;
+    margin: 0; 
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+body {
+    margin-top: 80px; 
+}
+
+
+.title .logo h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #e9c46a;
+}
+
+
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo,
+.title .go-home {
+    flex: 0 0 auto;
+}
+/* Go Home */
+.go-home {
+    text-align: right;
+}
+
+.go-home a {
+    padding: 8px 12px;
+    background-color: transparent;
+    color: #e9c46a;
+    text-decoration: none;
+    border: 2px solid #e9c46a;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 16px;
+}
+
+.go-home a:hover {
+    background-color: #e9c46a;
+    color: #264653;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    margin: 10px 5px 0 5px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
     </style>
 </head>
+
 <body>
-    <h1>Sentiment Analysis Charts</h1>
+    <div class="title">
+        <div class="go-home">
+            <a href="{% url 'home' %}">Home</a>
+        </div>
+    </div>
+    <h1>Sentiment Analysis Charts for playstore apps</h1>
     <form id="session-form" method="post">
         <label for="sessionId">Session ID:</label>
         <input type="text" id="sessionId" name="sessionId" required>
@@ -184,7 +265,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                     // Include CSRF token if required by your backend
-                    'X-CSRFToken': getCookie('csrftoken') // Example for Django
+                    'X-CSRFToken': getCookie('csrftoken') 
                 },
                 body: JSON.stringify({ sessionId: sessionId })
             })
@@ -200,7 +281,7 @@
             .then(data => {
                 if (data.data && Array.isArray(data.data) && data.data.length > 0) {
                     window.fetchedData = data.data; // Store data globally
-                    // Render the current tab if any
+                    // Render the current tab if
                     var activeTab = document.querySelector('.tab button.active');
                     if (activeTab) {
                         var tabName = activeTab.getAttribute('data-tab');
@@ -243,13 +324,11 @@
         function openTab(evt, tabName) {
             // Declare all variables
             var i, tabcontent, tablinks;
-
             // Hide all tabcontent
             tabcontent = document.getElementsByClassName("tabcontent");
             for (i = 0; i < tabcontent.length; i++) {
                 tabcontent[i].style.display = "none";
             }
-
             // Remove "active" class from all tablinks
             tablinks = document.getElementsByClassName("tablinks");
             for (i = 0; i < tablinks.length; i++) {
@@ -664,3 +743,4 @@
     </script>
 </body>
 </html>
+

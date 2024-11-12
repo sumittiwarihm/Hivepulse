@@ -641,7 +641,7 @@ import json
 from .models import playstoreProduct, review, sentimentResult
 from django.contrib.contenttypes.models import ContentType
 from collections import defaultdict
-from .utils import assign_category, CATEGORY_KEYWORDS
+from .utils import assign_category, assign_category2
 
 # @ login_required
 @csrf_exempt
@@ -686,7 +686,7 @@ def getDataforPlaystoreCategorization(request):
                 sentiment_result = sentiment.estimatedResult.lower() if sentiment else 'neutral'
 
                 # Categorize the review based on its content
-                category = assign_category(rev.reviewContent, CATEGORY_KEYWORDS)
+                category = assign_category(rev.reviewContent)
 
                 # Update category-wise sentiment counts using the stored sentiment result
                 if sentiment_result == 'positive':
@@ -731,36 +731,96 @@ def getDataForAmazonCategorization(request):
     try:
         amazon_products=amazonProduct.objects.filter(sessionId=sessionId)
         if not amazon_products.exists():
-            return JsonResponse({'error':"no amazon ASIN is present in tha dataabse"})
+            return JsonResponse({'error':"no amazon ASIN is present in tha databse"})
         response_data=[]
         for product in amazon_products:
             Asin=product.Asin
+            category_sentiments = defaultdict(lambda: {'positive': 0, 'negative': 0, 'neutral': 0})
             total_positive=total_negative=total_neutral=0
             product_type=ContentType.objects.get_for_model(amazonProduct)
             reviews=review.objects.filter(content_type=product_type,object_id=product.id)
             for rev in reviews:
                 sentiment=sentimentResult.objects.filter(review_id=rev.id).first()
                 sentiment_result=sentiment.estimatedResult.lower() if sentiment else 'neutral'
-                if sentiment_result=='positive':
-                    total_positive+=1
-                elif sentiment_result=='negative':
-                    total_negative+=1
+                category = assign_category2(rev.reviewContent)
+                # Update category-wise sentiment counts using the stored sentiment result
+                if sentiment_result == 'positive':
+                    total_positive += 1
+                    category_sentiments[category]['positive'] += 1
+                elif sentiment_result == 'negative':
+                    total_negative += 1
+                    category_sentiments[category]['negative'] += 1
                 else:
-                    total_neutral+=1
+                    total_neutral += 1
+                    category_sentiments[category]['neutral'] += 1
             response_data.append({
                 'asin': Asin,
                 'brand': product.Brand,
                 'totalPositive':total_positive,
                 'totalNegative':total_negative,
-                'totalNeutral':total_neutral
+                'totalNeutral':total_neutral,
+                'category': category_sentiments
             })
         return JsonResponse({'data':response_data},status=200)
     except Exception as e:
         return JsonResponse({'error':f"an error occured during interaction with database :{str(e)}"},status=500)
+# seeee below this
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @csrf_exempt
 def getDataForFlipkartCategorization(request):
     if(request.method!='POST'):
-        return JsonResponse({'error':"post method is not alllowed"},status=400)
+        return JsonResponse({'error':"only Post method is alllowed"},status=400)
     try:
         body=json.loads(request.body)
         sessionId=body.get('sessionId')
@@ -769,32 +829,45 @@ def getDataForFlipkartCategorization(request):
     except json.JSONDecodeError:
         return JsonResponse({'error':"invalid payload"},status=400)
     try:
-        flipkart_product=flipkartProduct.objects.filter(sessionId=sessionId)
-        if not flipkart_product.exists():
+        flipkart_products=flipkartProduct.objects.filter(sessionId=sessionId)
+        if not flipkart_products.exists():
             return JsonResponse({'error':"no product exist for this sessionId"})
         response_data=[]
-        for product in flipkart_product:
-            # now for every product we want all the reviews and after that we will require all the sentiment according to that
-            total_positive=total_negative=total_neutral=0
-            Fsn=product.Fsn
-            product_type=ContentType.objects.get_for_model(flipkartProduct)
-            reviews=review.objects.filter(content_type=product_type,object_id=product.id)
-            for rev in reviews:
-                sentiment=sentimentResult.objects.filter(review_id=rev.id).first()
-                sentiment_result=sentiment.estimatedResult.lower() if sentiment else 'neutral'
-                if sentiment_result=='positive':
-                    total_positive+=1
-                elif sentiment_result=='negative':
-                    total_negative+=1
-                else:
-                    total_neutral+=1
-            response_data.append({
-                'fsn':Fsn,
-                'brand':product.Brand,
-                'totalPositive':total_positive,
-                'totalNegative':total_negative,
-                'totalNeutral': total_neutral
-            })
+        try:
+            for product in flipkart_products:
+                category_sentiments = defaultdict(lambda: {'positive': 0, 'negative': 0, 'neutral': 0})
+                # now for every product we want all the reviews and after that we will require all the sentiment according to that
+                total_positive=total_negative=total_neutral=0
+                Fsn=product.Fsn
+                product_type=ContentType.objects.get_for_model(flipkartProduct)
+                reviews=review.objects.filter(content_type=product_type,object_id=product.id)
+                for rev in reviews:
+                    sentiment=sentimentResult.objects.filter(review_id=rev.id).first()
+                    sentiment_result=sentiment.estimatedResult.lower() if sentiment else 'neutral'
+                    category = assign_category2(rev.reviewContent)
+                    if sentiment_result == 'positive':
+                        total_positive += 1
+                        category_sentiments[category]['positive'] += 1
+                    elif sentiment_result == 'negative':
+                        total_negative += 1
+                        category_sentiments[category]['negative'] += 1
+                    else:
+                        total_neutral += 1
+                        category_sentiments[category]['neutral'] += 1
+                try: 
+                    response_data.append({
+                        'fsn':Fsn,
+                        'brand':product.Brand,
+                        'totalPositive':total_positive,
+                        'totalNegative':total_negative,
+                        'totalNeutral': total_neutral,
+                        'category': category_sentiments
+                    })
+                except Exception as e:
+                    return JsonResponse({'error':"error in interacting with database"},status=404)
+            return JsonResponse({'data': response_data}, status=200)
+        except:
+            return JsonResponse({'error':"error in going through product "},status=404)
     except Exception as e:
         return JsonResponse({'error':f"an error occured during interaction with database :{str(e)}"},status=500)
 
