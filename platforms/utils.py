@@ -130,42 +130,42 @@ def assign_category2(review_text, priority_order=PRIORITY_ORDER2):
 
 
 
-# import re
-# from collections import defaultdict
-CATEGORY_KEYWORDS = {
-    'appExperience': [
-        'app', 'interface', 'ui', 'design', 'login', 'navigation', 'update', 'otp', 'layout', 'screen',
-        'button', 'icon', 'responsive', 'crash', 'bug', 'slow', 'freeze', 'glitch', 'issue', 'error',
-        'fix', 'loading', 'lag', 'technical', 'user-friendly', 'visuals', 'functionality', 'accessibility',
-        'customization', 'interaction', 'feedback', 'usage', 'operation', 'performance', 'experience'
-    ],
-    'price': [
-        'price', 'cost', 'expensive', 'cheap', 'affordable', 'value', 'worth', 'pricing', 'overpriced',
-        'underpriced', 'discount', 'sale', 'budget', 'economical', 'high-priced', 'low-priced', 'deal',
-        'bargain', 'fee', 'charge', 'expense'
-    ],
-    'deliveryRelated': [
-        'delivery', 'shipping', 'courier', 'arrival', 'delayed', 'on-time', 'fast', 'slow', 'package',
-        'tracking', 'lost', 'damaged', 'late', 'prompt', 'service', 'express', 'logistics', 'dispatch',
-        'estimate', 'schedule', 'shipped', 'received'
-    ],
-    'qualityOfProduct': [
-        'quality', 'durability', 'reliability', 'performance', 'defective', 'broken', 'faulty',
-        'material', 'workmanship', 'finish', 'longevity', 'sturdy', 'well-made', 'substandard',
-        'high-quality', 'low-quality', 'malfunction', 'damage', 'defect', 'issues', 'poor', 'good'
-    ],
-    'customerSupport': [
-        'support', 'service', 'help', 'assistance', 'customer service', 'response', 'resolution',
-        'feedback', 'complaint', 'representative', 'agent', 'chat', 'email', 'phone', 'inquiry',
-        'issue', 'problem', 'satisfaction', 'follow-up', 'experience', 'contact', 'query'
-    ],
-    'paymentRelated': [
-        'payment', 'transaction', 'billing', 'charge', 'checkout', 'invoice', 'refund', 'credit card',
-        'debit card', 'paypal', 'method', 'currency', 'fee', 'gateway', 'online payment', 'processing',
-        'authorization', 'declined', 'failed payment', 'installment', 'emi', 'wallet', 'receipt', 'order',
-        'amount', 'confirmation', 'auto-pay', 'direct debit', 'overcharge', 'payment plan', 'payment method'
-    ]
-}
+# # import re
+# # from collections import defaultdict
+# CATEGORY_KEYWORDS = {
+#     'appExperience': [
+#         'app', 'interface', 'ui', 'design', 'login', 'navigation', 'update', 'otp', 'layout', 'screen',
+#         'button', 'icon', 'responsive', 'crash', 'bug', 'slow', 'freeze', 'glitch', 'issue', 'error',
+#         'fix', 'loading', 'lag', 'technical', 'user-friendly', 'visuals', 'functionality', 'accessibility',
+#         'customization', 'interaction', 'feedback', 'usage', 'operation', 'performance', 'experience'
+#     ],
+#     'price': [
+#         'price', 'cost', 'expensive', 'cheap', 'affordable', 'value', 'worth', 'pricing', 'overpriced',
+#         'underpriced', 'discount', 'sale', 'budget', 'economical', 'high-priced', 'low-priced', 'deal',
+#         'bargain', 'fee', 'charge', 'expense'
+#     ],
+#     'deliveryRelated': [
+#         'delivery', 'shipping', 'courier', 'arrival', 'delayed', 'on-time', 'fast', 'slow', 'package',
+#         'tracking', 'lost', 'damaged', 'late', 'prompt', 'service', 'express', 'logistics', 'dispatch',
+#         'estimate', 'schedule', 'shipped', 'received'
+#     ],
+#     'qualityOfProduct': [
+#         'quality', 'durability', 'reliability', 'performance', 'defective', 'broken', 'faulty',
+#         'material', 'workmanship', 'finish', 'longevity', 'sturdy', 'well-made', 'substandard',
+#         'high-quality', 'low-quality', 'malfunction', 'damage', 'defect', 'issues', 'poor', 'good'
+#     ],
+#     'customerSupport': [
+#         'support', 'service', 'help', 'assistance', 'customer service', 'response', 'resolution',
+#         'feedback', 'complaint', 'representative', 'agent', 'chat', 'email', 'phone', 'inquiry',
+#         'issue', 'problem', 'satisfaction', 'follow-up', 'experience', 'contact', 'query'
+#     ],
+#     'paymentRelated': [
+#         'payment', 'transaction', 'billing', 'charge', 'checkout', 'invoice', 'refund', 'credit card',
+#         'debit card', 'paypal', 'method', 'currency', 'fee', 'gateway', 'online payment', 'processing',
+#         'authorization', 'declined', 'failed payment', 'installment', 'emi', 'wallet', 'receipt', 'order',
+#         'amount', 'confirmation', 'auto-pay', 'direct debit', 'overcharge', 'payment plan', 'payment method'
+#     ]
+# }
 
 
 # def assign_category(review_text, category_keywords, priority_order=None,):

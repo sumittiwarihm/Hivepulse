@@ -180,42 +180,44 @@ class uploadAmazon(APIView):
     
 # logic for getting review from amazon using the asin start------------------------------------------------------------------
  # Allows POST requests without CSRF token, use with caution
+# views.py
+import json
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from platforms.utilsAmazonScrapping import fetch_amazon_reviews
 class runAmazonReviewScrappingScript(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    def post(self ,request):
+    def post(self, request):
         data = json.loads(request.body)
-        sessionId=data.get('sessionId')
-        username=request.user.username
+        sessionId = data.get('sessionId')
+        username = request.user.username
+        try:
+            message = fetch_amazon_reviews(sessionId=sessionId, username=username)
+            return JsonResponse({'status': 'success', 'message': message})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
 
-        if request.method == 'POST':
-            try:
-                call_command('amazonScrapping' ,sessionId=sessionId,username=username)  # Ensure this matches your management command
-                return JsonResponse({'status': 'success', 'message': ' Amazon Script executed successfully.'})
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 ## logic for getting review from amazon using the asin end---------------------------------------------------------------
 
 
 
 # logic for getting sentiment of those reviews and saving to data running mechanism start ------------------------------------------------------
-class runAmazonReviewSentimentScript(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+# views.py
 
-    def post(self,request):
-        data = json.loads(request.body)#
-        sessionId=data.get('sessionId')#
-        username=request.user.username #
-        if request.method == 'POST':
-            try:
-                call_command('amazonSentimentAnalysis',sessionId=sessionId,username=username)  # Ensure this matches your management command
-                return JsonResponse({'status': 'success', 'message': ' Amazon sentiment analysis Script executed successfully.'})
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+from .utilsAmazonSentiment import perform_amazon_sentiment_analysis
+
+class runAmazonReviewSentimentScript(APIView):
+    def post(self, request):
+        data = json.loads(request.body)
+        sessionId = data.get('sessionId')
+        username = request.user.username
+
+        try:
+            perform_amazon_sentiment_analysis(sessionId=sessionId, username=username)
+            return JsonResponse({'status': 'success', 'message': 'Amazon sentiment analysis script executed successfully.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
 
     
 # logic for getting sentiment of those reviews and saving to data running mechanism end----------------------------
@@ -294,37 +296,42 @@ class uploadFlipkart(APIView):
 
 
 
-class runFlipkartReviewScrappingScript(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    def post(self,request):
-        data = json.loads(request.body)
-        sessionId=data.get('sessionId')
-        username=request.user.username
-        if request.method == 'POST':
-            try:
-                call_command('flipkartScrapping',sessionId=sessionId,username=username)  # Ensure this matches your management command
-                return JsonResponse({'status': 'success', 'message': ' Flipkart Script executed successfully.'})
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+# views.py
 
+from .utilsFlipkartScrapping import fetch_flipkart_reviews
+
+class runFlipkartReviewScrappingScript(APIView):
+    def post(self, request):
+        data = json.loads(request.body)
+        sessionId = data.get('sessionId')
+        username = request.user.username
+
+        try:
+            message = fetch_flipkart_reviews(sessionId=sessionId, username=username)
+            return JsonResponse({'status': 'success', 'message': message})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+
+# views.py
+
+from .utilsFlipkartSentiment import perform_flipkart_sentiment_analysis
 
 class runFlipkartReviewSentimentScript(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    def post(self,request):
-        
+    def post(self, request):
         if request.method == 'POST':
-            data = json.loads(request.body)#
-            sessionId=data.get('sessionId')#
-            username=request.user.username #
+            data = json.loads(request.body)
+            sessionId = data.get('sessionId')
+            username = request.user.username
+
             try:
-                call_command('flipkartSentimentAnalysis',sessionId=sessionId,username=username)  # Ensure this matches your management command
-                return JsonResponse({'status': 'success', 'message': ' Flipkart sentiment analysis Script executed successfully.'})
+                message = perform_flipkart_sentiment_analysis(sessionId=sessionId, username=username)
+                return JsonResponse({'status': 'success', 'message': message})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': str(e)})
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
 
 # flipkart end ----------------------------------------------------------------------------------------------
 
@@ -400,37 +407,45 @@ class uploadPlaystore(APIView):
         return render(request, 'playstoreForm.html', {'form': form})
     
 
+# views.py
+
+from .utilsPlaystoreScrapping import fetch_playstore_reviews
+
 class runPlaystoreReviewScrappingScript(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    def post(self,request):
+    def post(self, request):
         if request.method == 'POST':
             data = json.loads(request.body)
-            sessionId=data.get('sessionId')
-            username=request.user.username
+            sessionId = data.get('sessionId')
+            username = request.user.username
+
             try:
-                call_command('playstoreScrapping',sessionId=sessionId,username=username)  # Ensure this matches your management command
-                return JsonResponse({'status': 'success', 'message': ' playstore Script executed successfully.'})
+                message = fetch_playstore_reviews(sessionId=sessionId, username=username)
+                return JsonResponse({'status': 'success', 'message': message})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': str(e)})
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 
+
+
+# views.py
+
+from .utilsPlaystoreSentiment import perform_playstore_sentiment_analysis
 
 class runPlaystoreReviewSentimentScript(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    def post(self,request):
+    def post(self, request):
         if request.method == 'POST':
-            data = json.loads(request.body)#
-            sessionId=data.get('sessionId')#
-            username=request.user.username #
+            data = json.loads(request.body)
+            sessionId = data.get('sessionId')
+            username = request.user.username
+
             try:
-                call_command('playstoreSentimentAnalysis',sessionId=sessionId,username=username)  # Ensure this matches your management command
-                return JsonResponse({'status': 'success', 'message': ' Playstore sentiment analysis Script executed successfully.'})
+                message = perform_playstore_sentiment_analysis(sessionId=sessionId, username=username)
+                return JsonResponse({'status': 'success', 'message': message})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': str(e)})
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
     # playstore end --------------------------------------------------------------------------------------------------------
 
 # cross platform redirecting----------------------------------------------------------------------------------------------------------------
