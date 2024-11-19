@@ -52,7 +52,7 @@ body {
 .progress-bar {
     width: 25%; /* Start at 25% for step 1 */
     height: 10px;
-    background-color: #2a9d8f;
+    background-color: #2a9b8e;
     transition: width 0.3s ease;
 }
 

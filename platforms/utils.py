@@ -1,3 +1,7 @@
+
+
+#categorization Script--------------------------------------------------------------------------------------------------------------------------------------------
+
 from sentence_transformers import SentenceTransformer, util
 # Load the pre-trained Sentence-BERT model
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
@@ -206,4 +210,5 @@ def assign_category2(review_text, priority_order=PRIORITY_ORDER2):
 #                 if cat in categories_with_max:
 #                     return cat
 #         return categories_with_max[0]
-    
+
+

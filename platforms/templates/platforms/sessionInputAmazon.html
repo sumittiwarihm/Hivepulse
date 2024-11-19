@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sentiment Analysis Charts for Amazon Products</title>
+    <title >Sentiment Analysis Charts for Amazon Products</title>
     <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js"></script>
 
     <style>
@@ -226,6 +226,12 @@ body {
                 alert("Session ID is required!");
                 return;
             }
+            const token = localStorage.getItem('access');
+         if (!token) {
+            alert('No access token found. Please log in again.');
+            window.location.href = '/login-page/';
+              return;
+           }
 
             // Show loading indicator
             document.getElementById('loading').style.display = 'block';

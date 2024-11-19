@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Word Cloud</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+  <div class="word-cloud" id="wordCloud"></div>
+  <script src="script.js"></script>
+</body>
+</html>
+<style>
+    .word-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.word-cloud span {
+  font-weight: bold;
+  position: relative;
+  display: inline-block;
+  transition: transform 0.3s ease-in-out;
+  color: #000;
+  animation: enter 2s ease-in-out;
+}
+
+@keyframes enter {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+</style>
+<script>
+    const words = [
+  { text: "Dynamic", weight: 5 },
+  { text: "Word", weight: 3 },
+  { text: "Cloud", weight: 8 },
+  { text: "Responsive", weight: 4 },
+  { text: "CSS", weight: 2 }
+];
+
+const wordCloud = document.getElementById("wordCloud");
+
+words.forEach(word => {
+  const wordSpan = document.createElement("span");
+  wordSpan.textContent = word.text;
+
+  // Set font size based on weight
+  wordSpan.style.fontSize = `calc(5px)`;
+
+  // Set random color
+  wordSpan.style.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+  // Set random rotation
+  const rotations = [-45, 0, 45, 90, -90];
+  wordSpan.style.transform = `rotate(${rotations[Math.floor(Math.random() * rotations.length)]}deg)`;
+
+  wordCloud.appendChild(wordSpan);
+});
+
+</script>

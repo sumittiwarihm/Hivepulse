@@ -29,7 +29,10 @@ function goToNextStep(currentStep) {
             nextStepDiv.style.display = 'block';
             updateProgressBar(currentStep + 1);
         } else {
-            alert('Please upload the file before proceeding to the next step.');
+            alert('you are procceding without uploading the file');
+            currentStepDiv.style.display = 'none';
+            nextStepDiv.style.display = 'block';
+            updateProgressBar(currentStep + 1);
         }
     } else if (currentStep === 3) {
         // Validate that the scraping script has been run successfully
@@ -38,7 +41,10 @@ function goToNextStep(currentStep) {
             nextStepDiv.style.display = 'block';
             updateProgressBar(currentStep + 1);
         } else {
-            alert('Please run the scraping script before proceeding to the next step.');
+            alert('you are procceding without running the scrappping script');
+            currentStepDiv.style.display = 'none';
+            nextStepDiv.style.display = 'block';
+            updateProgressBar(currentStep + 1);
         }
     }
 }
@@ -47,6 +53,7 @@ function goToNextStep(currentStep) {
 function goToPreviousStep(currentStep) {
     var currentStepDiv = document.getElementById('step-' + currentStep);
     var previousStepDiv = document.getElementById('step-' + (currentStep - 1));
+    updateProgressBar(currentStep -1);
     currentStepDiv.style.display = 'none';
     previousStepDiv.style.display = 'block';
 }
@@ -58,7 +65,8 @@ function finishProcess() {
         // Redirect to home or wherever you want
         window.location.href = '/';
     } else {
-        alert('Please complete the previous steps before finishing.');
+        alert('you are navigating out without running the sentiment script ');
+        window.location.href = '/';
     }
 }
 

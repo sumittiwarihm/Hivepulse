@@ -72,10 +72,10 @@ body {
     </div>
 
     <div class="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
+        <div class="progress-bar bg-success" id="progress-bar"></div>
      
         <div class="progress-step">
-            Step <span id="current-step">1</span> of 4 in progress
+            Step <span id="current-step" class="text-success">1</span> of 4 
         </div>
     </div>
     
@@ -116,6 +116,7 @@ body {
         <div id="step-3" class="step" style="display: none;">
             <div class="script-container">
                 <div class="script-section">
+                    <h2>Run Scrapping script from here </h2>
                     <label for="scrapping-session-id">Session ID:</label>
                     <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
                     <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Scrapping Script</button>
@@ -131,6 +132,7 @@ body {
         <div id="step-4" class="step" style="display: none;">
             <div class="script-container">
                 <div class="script-section">
+                    <h2>Run sentiment script from here </h2>
                     <label for="sentiment-session-id">Session ID:</label>
                     <input type="text" id="sentiment-session-id" name="sentiment-session-id" placeholder="Enter Session ID">
                     <button id="run-sentimentScript-btn" onclick="runSentimentScript()">Run Sentiment Script</button>

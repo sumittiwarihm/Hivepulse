@@ -13,11 +13,10 @@
             <a href="{% url 'home' %}">Home</a>
         </div>
     </div>
-
+    
     <div class="container">
-        <h1>Raw Sentiment Report</h1>
-        
-        <form method="POST" class="form-content">
+        <h1 class="head">Raw Sentiment Report</h1>
+        <form id="sentimentForm" class="form-content">
             {% csrf_token %}
             <label for="platform">Select Platform:</label>
             <select name="platform" id="platform" required onchange="showInputField(this.value)">
@@ -34,17 +33,20 @@
             <button type="submit">Get Sentiment Results</button>
         </form>
 
-        {% if results %}
-            <!-- Download button at the top -->
-            <form action="{% url 'download_excel' %}" method="POST" class="download-form">
+        <!-- Download button will be dynamically inserted here -->
+        <div id="downloadSection" style="display: none;">
+            <form id="downloadForm" action="{% url 'download_excel' %}" method="POST" class="download-form">
                 {% csrf_token %}
-                <input type="hidden" name="platform" value="{{ platform }}">
-                <input type="hidden" name="sessionId" value="{{ sessionId }}">
+                <input type="hidden" name="platform" id="downloadPlatform">
+                <input type="hidden" name="sessionId" id="downloadSessionId">
                 <button type="submit" class="download-button">Download as Excel</button>
             </form>
+        </div>
 
+        <!-- Table container for results -->
+        <div id="resultsSection" style="display: none;">
             <div class="table-container">
-                <table>
+                <table id="resultsTable">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -58,18 +60,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for ID, Brand, comment, sentiment, rating, positiveScore, neutralScore, negativeScore in results %}
-                        <tr>
-                            <td>{{ ID }}</td>
-                            <td>{{ Brand }}</td>
-                            <td>{{ comment }}</td>
-                            <td>{{ sentiment }}</td>
-                            <td>{{ rating }}</td>
-                            <td>{{ positiveScore }}</td>
-                            <td>{{ neutralScore }}</td>
-                            <td>{{ negativeScore }}</td>
-                        </tr>
-                        {% endfor %}
+                        <!-- Results will be dynamically inserted here -->
                     </tbody>
                 </table>
             </div>
@@ -77,12 +68,14 @@
             <div class="view-more-container">
                 <button id="viewMoreButton" class="view-more-button" onclick="toggleViewMore()">View More</button>
             </div>
-        {% elif error %}
-            <p class="error-message">{{ error }}</p>
-        {% endif %}
+        </div>
+
+        <!-- Error message section -->
+        <p id="errorMessage" class="error-message" style="display: none;"></p>
     </div>
 
     <script>
+        // Function to show the session ID input field based on platform selection
         function showInputField(platform) {
             let inputField = document.getElementById('inputField');
             inputField.innerHTML = '';
@@ -94,6 +87,7 @@
             }
         }
 
+        // Function to toggle the "View More" functionality for the results table
         function toggleViewMore() {
             const tableContainer = document.querySelector('.table-container');
             const viewMoreButton = document.getElementById('viewMoreButton');
@@ -103,6 +97,123 @@
             } else {
                 viewMoreButton.textContent = 'View More';
             }
+        }
+
+        // Handle form submission using Fetch API
+        document.getElementById('sentimentForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Hide previous results and error messages
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('downloadSection').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+
+            // Get form data
+            const platform = document.getElementById('platform').value;
+            const sessionIdElement = document.getElementById('sessionId');
+            const sessionId = sessionIdElement ? sessionIdElement.value : '';
+
+            // Prepare the payload
+            const payload = {
+                platform: platform,
+                sessionId: sessionId
+            };
+            if (!sessionId) {
+                alert("Session ID is required!");
+                return;
+            }
+            const token = localStorage.getItem('access');
+         if (!token) {
+            alert('No access token found. Please log in again.');
+            window.location.href = '/login-page/';
+              return;
+           }
+
+            // Send POST request to the API endpoint
+            fetch('{% url "product_sentiment_view" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken() // Function to get CSRF token from cookies
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (status === 200 && body.data) {
+                    populateResultsTable(body.data);
+                    setupDownloadButton(platform, sessionId);
+                    document.getElementById('resultsSection').style.display = 'block';
+                    document.getElementById('downloadSection').style.display = 'block';
+                } else if (body.error) {
+                    showError(body.error);
+                } else {
+                    showError('An unexpected error occurred.');
+                }
+            })
+            .catch(error => {
+                showError('Failed to fetch data from the server.');
+                console.error('Error:', error);
+            });
+        });
+
+        // Function to populate the results table with data
+        function populateResultsTable(data) {
+            const tbody = document.querySelector('#resultsTable tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${escapeHTML(item.product_id)}</td>
+                    <td>${escapeHTML(item.brand)}</td>
+                    <td>${escapeHTML(item.review_content)}</td>
+                    <td>${escapeHTML(item.sentiment_result)}</td>
+                    <td>${escapeHTML(item.rating)}</td>
+                    <td>${escapeHTML(item.positive_score)}</td>
+                    <td>${escapeHTML(item.neutral_score)}</td>
+                    <td>${escapeHTML(item.negative_score)}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Function to set up the download button with hidden inputs
+        function setupDownloadButton(platform, sessionId) {
+            document.getElementById('downloadPlatform').value = platform;
+            document.getElementById('downloadSessionId').value = sessionId;
+        }
+
+        // Function to display error messages
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        // Function to get CSRF token from cookies
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    return decodeURIComponent(cookie.substring(name.length + 1));
+                }
+            }
+            return '';
+        }
+
+        // Function to escape HTML to prevent XSS
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return str;
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
         }
     </script>
 </body>

@@ -187,7 +187,7 @@ body {
             <a href="{% url 'home' %}">Home</a>
         </div> 
     </div>
-    <h1>Sentiment Analysis Charts for Flipkart Products</h1>
+    <h1 >Sentiment Analysis Charts for Flipkart Products</h1>
     <form id="session-form" method="post">
         <label for="sessionId">Session ID:</label>
         <input type="text" id="sessionId" name="sessionId" required>
@@ -226,6 +226,12 @@ body {
                 alert("Session ID is required!");
                 return;
             }
+            const token = localStorage.getItem('access');
+         if (!token) {
+            alert('No access token found. Please log in again.');
+            window.location.href = '/login-page/';
+              return;
+           }
 
             // Show loading indicator
             document.getElementById('loading').style.display = 'block';

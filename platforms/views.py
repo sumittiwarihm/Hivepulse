@@ -86,6 +86,8 @@ def verify_token(request):
 # redirect code start-------------------------------------------------------
 def session_input_view(request):
     return render(request, 'platforms/graph.html')
+def GetRawPage(request):
+    return render(request,'platforms/product_sentiment.html')
 
 def loginPage(request):
     return render(request, 'platforms/login.html')
@@ -450,76 +452,151 @@ class runPlaystoreReviewSentimentScript(APIView):
 
 # cross platform redirecting----------------------------------------------------------------------------------------------------------------
 
+# from django.shortcuts import render
+# from django.contrib.contenttypes.models import ContentType
+# from platforms.models import amazonProduct, flipkartProduct, playstoreProduct, review
+# # @ login_required
+# def product_sentiment_view(request):
+#     results = []
+#     error = None
+#     platform = request.POST.get('platform', '')
+#     session_id = request.POST.get('sessionId', '')
+
+#     if request.method == 'POST':
+#         platform = request.POST.get('platform')
+#         identifier = request.POST.get('sessionId')
+#         platform_mapping = {
+#             'amazon': (amazonProduct, 'Asin'),
+#             'flipkart': (flipkartProduct, 'Fsn'),
+#             'playstore': (playstoreProduct, 'AppId'),
+#         }
+        
+#         if platform in platform_mapping:
+#             model_class, id_field = platform_mapping[platform]
+#         else:
+#             error = "Invalid platform selected."
+        
+#         if identifier and not error:
+#             try:
+#                 products = model_class.objects.filter(sessionId=identifier, Status='completed')
+                
+#                 if not products.exists():
+#                     error = f"No completed product with the identifier {identifier} found in {platform.capitalize()}."
+#                 else:
+#                     for product in products:
+#                         product_id = getattr(product, id_field)
+#                         product_Brand = getattr(product, 'Brand')
+                        
+#                         content_type = ContentType.objects.get_for_model(model_class)
+
+#                         reviews_queryset = review.objects.filter(
+#                             content_type=content_type, 
+#                             object_id=product.id
+#                         )
+                        
+#                         for rev in reviews_queryset:
+#                             sentiment_results = rev.sentimentresult_set.all()
+#                             for sentiment in sentiment_results:
+#                                 results.append((
+#                                     product_id,
+#                                     product_Brand,
+#                                     rev.reviewContent, 
+#                                     sentiment.estimatedResult,
+#                                     rev.rating, 
+#                                     round(sentiment.positiveScore, 3), 
+#                                     round(sentiment.neutralScore, 3), 
+#                                     round(sentiment.negativeScore, 3),
+#                                 ))
+
+#                 if not results:
+#                     error = "No comments or sentiment results found for the provided identifier."
+                
+#             except model_class.DoesNotExist:
+#                 error = f"Product with the provided identifier does not exist in the {platform.capitalize()} platform or is not yet completed."
+                
+
+#     return render(request, 'platforms/product_sentiment.html', {
+#         'results': results,
+#         'error': error,
+#         'platform': platform,
+#         'sessionId': session_id
+#     })
+
+
+
+
 from django.shortcuts import render
+from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 from platforms.models import amazonProduct, flipkartProduct, playstoreProduct, review
-# @ login_required
+
+# @login_required
+@csrf_exempt
 def product_sentiment_view(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': "Method not allowed. Only POST requests are accepted."}, status=405)
     results = []
-    error = None
-    platform = request.POST.get('platform', '')
-    session_id = request.POST.get('sessionId', '')
+    body = json.loads(request.body)
+    platform = body.get('platform',' ' )
+    session_id = body.get('sessionId', ' ')
+    if not platform:
+        return JsonResponse({'error': "Platform is required."}, status=400)
+    if not session_id:
+        return JsonResponse({'error': "Session ID is required."}, status=400)
 
-    if request.method == 'POST':
-        platform = request.POST.get('platform')
-        identifier = request.POST.get('sessionId')
-        platform_mapping = {
-            'amazon': (amazonProduct, 'Asin'),
-            'flipkart': (flipkartProduct, 'Fsn'),
-            'playstore': (playstoreProduct, 'AppId'),
-        }
-        
-        if platform in platform_mapping:
-            model_class, id_field = platform_mapping[platform]
-        else:
-            error = "Invalid platform selected."
-        
-        if identifier and not error:
-            try:
-                products = model_class.objects.filter(sessionId=identifier, Status='completed')
-                
-                if not products.exists():
-                    error = f"No completed product with the identifier {identifier} found in {platform.capitalize()}."
-                else:
-                    for product in products:
-                        product_id = getattr(product, id_field)
-                        product_Brand = getattr(product, 'Brand')
-                        
-                        content_type = ContentType.objects.get_for_model(model_class)
+    platform_mapping = {
+        'amazon': (amazonProduct, 'Asin'),
+        'flipkart': (flipkartProduct, 'Fsn'),
+        'playstore': (playstoreProduct, 'AppId'),
+    }
 
-                        reviews_queryset = review.objects.filter(
-                            content_type=content_type, 
-                            object_id=product.id
-                        )
-                        
-                        for rev in reviews_queryset:
-                            sentiment_results = rev.sentimentresult_set.all()
-                            for sentiment in sentiment_results:
-                                results.append((
-                                    product_id,
-                                    product_Brand,
-                                    rev.reviewContent, 
-                                    sentiment.estimatedResult,
-                                    rev.rating, 
-                                    round(sentiment.positiveScore, 3), 
-                                    round(sentiment.neutralScore, 3), 
-                                    round(sentiment.negativeScore, 3),
-                                ))
+    if platform not in platform_mapping:
+        return JsonResponse({'error': "Invalid platform selected. Choose from 'amazon', 'flipkart', or 'playstore'."}, status=400)
 
-                if not results:
-                    error = "No comments or sentiment results found for the provided identifier."
-                
-            except model_class.DoesNotExist:
-                error = f"Product with the provided identifier does not exist in the {platform.capitalize()} platform or is not yet completed."
-                
+    model_class, id_field = platform_mapping[platform]
 
-    return render(request, 'platforms/product_sentiment.html', {
-        'results': results,
-        'error': error,
-        'platform': platform,
-        'sessionId': session_id
-    })
+    try:
+        # Check if any completed products exist for the given session ID
+        products = model_class.objects.filter(sessionId=session_id, Status='completed')
 
+        if not products.exists():
+            return JsonResponse({'error': f"No completed products found for the provided session ID: {session_id}."}, status=404)
+
+        # Process each product
+        for product in products:
+            product_id = getattr(product, id_field, None)
+            product_brand = getattr(product, 'Brand', None)
+
+            if not product_id or not product_brand:
+                continue  # Skip products with missing critical information
+
+            # Fetch reviews associated with the product
+            content_type = ContentType.objects.get_for_model(model_class)
+            reviews_queryset = review.objects.filter(content_type=content_type, object_id=product.id)
+
+            for rev in reviews_queryset:
+                sentiment_results = rev.sentimentresult_set.all()
+                for sentiment in sentiment_results:
+                    results.append({
+                        'product_id': product_id,
+                        'brand': product_brand,
+                        'review_content': rev.reviewContent,
+                        'sentiment_result': sentiment.estimatedResult,
+                        'rating': rev.rating,
+                        'positive_score': round(sentiment.positiveScore, 3),
+                        'neutral_score': round(sentiment.neutralScore, 3),
+                        'negative_score': round(sentiment.negativeScore, 3),
+                    })
+
+        if not results:
+            return JsonResponse({'error': f"No sentiment results found for session ID: {session_id}."}, status=404)
+
+    except model_class.DoesNotExist:
+        return JsonResponse({'error': f"No records found for the session ID: {session_id} in the {platform.capitalize()} platform."}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"}, status=500)
+
+    return JsonResponse({'data': results}, status=200)
 
 #----------------------------------------------------------------------------------------------
 import pandas as pd
@@ -593,7 +670,7 @@ def sessionInputAmazon(request):
     return render (request,'platforms/sessionInputAmazon.html')
 def sessionInputFlipkart(request):
     return render (request,'platforms/sessionInputFlipkart.html')
-# @ login_required
+@ login_required
 def getDataForGraph(request):
     if request.method == 'GET':  # Ensure it's a POST request
         return JsonResponse({'error': 'wrong request method'}, status=400)
@@ -644,6 +721,9 @@ def getDataForGraph(request):
         })
 
     return JsonResponse({'data': data})
+
+
+
 
 
 #----------------------------------------------------------------------------------------------------------
@@ -888,7 +968,26 @@ def getDataForFlipkartCategorization(request):
 
                 
 
-            
+# def getDataForWorldCloudForAmazon(request):
+#     if(request.method!='POST'):
+#         return JsonResponse({'error':"only post method is allowed"},status=400)
+#     try:
+#         body=json.loads(request.body)
+#         sessionId=body.get('sessionId')
+#         if not sessionId:
+#             return JsonResponse({'error':"session id is not found or payload is invalid"},status=400)
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error':"invalid payload"},status=400)
+#     try:
+#         reviews=review.objects.filter(sessionId=sessionId)
+#         if not review.exists():
+#             return JsonResponse({'error':"no review exist for this sessionId"})
+
+
+
+
+
+             
 
 
 

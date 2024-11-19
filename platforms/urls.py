@@ -30,6 +30,7 @@ urlpatterns = [
     # path('graph/', views.getDataForPlaystoreGraph, name='getDataForPlaystoreGraph'),
     path('dataforPlaystoreCategorization/',views.getDataforPlaystoreCategorization,name='getDataforPlaystoreCategorization'), 
     path('dataforAmazonCategorization/',views.getDataForAmazonCategorization,name='getDataForAmazonCategorization')  ,
-    path('dataforFlipkartCategorization/',views.getDataForFlipkartCategorization,name='getDataForFlipkartCategorization')  
+    path('dataforFlipkartCategorization/',views.getDataForFlipkartCategorization,name='getDataForFlipkartCategorization'),
+    path('RawReport/',views.GetRawPage,name="rawReportPage") 
 ]
 

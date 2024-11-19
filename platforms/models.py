@@ -66,5 +66,14 @@ class sentimentResult(models.Model):
     user = models.CharField(max_length=100) 
     sessionId = models.CharField(max_length=100) 
     estimatedResult= models.CharField(max_length=50 ,default='')  # it is not nesccesary to store because it can be computed on the fly
+class taskStatus(models.Model):
+    sessionId=models.CharField(max_length=100)
+    user=models.CharField(max_length=100)
+    completed=models.BooleanField(default=False)
+    status = models.CharField(max_length=255, default="Pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 
 
