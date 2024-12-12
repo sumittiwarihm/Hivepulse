@@ -1,4 +1,6 @@
-# utils.py
+
+from django.http import JsonResponse, HttpResponse,response
+import json
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -24,9 +26,11 @@ def fetch_amazon_reviews(sessionId, username):
 
     try:
         asin_list = amazonProduct.objects.filter(Status='pending', sessionId=sessionId, user=username).values_list('Asin', flat=True).distinct()
-
+        cnt=0
+        size=0
         for Asin in asin_list:
-            url = f"https://www.amazon.in/product-reviews/{Asin}/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews&sortBy=recent&pageNumber=1"
+            size=size+1
+            url = f"https://www.amazon.com/product-reviews/{Asin}/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews&sortBy=recent&pageNumber=1"
             browser.get(url)
 
             try:
@@ -41,15 +45,18 @@ def fetch_amazon_reviews(sessionId, username):
                     total_reviews = int(total_reviews_number_str)
                     num_pages = min((total_reviews // 10) + 1, 10)
             except TimeoutException:
+                cnt=cnt+1
                 continue
             except NoSuchElementException:
+                cnt=cnt+1
                 continue
             except Exception as e:
+                cnt=cnt+1
                 continue
             
             for page in range(1, num_pages + 1):
                 try:
-                    page_url = f"https://www.amazon.in/product-reviews/{Asin}/ref=cm_cr_arp_d_viewopt_srt?ie=UTF8&reviewerType=all_reviews&sortBy=recent&pageNumber={page}"
+                    page_url = f"https://www.amazon.com/product-reviews/{Asin}/ref=cm_cr_arp_d_viewopt_srt?ie=UTF8&reviewerType=all_reviews&sortBy=recent&pageNumber={page}"
                     browser.get(page_url)
                     time.sleep(2)
 
@@ -79,12 +86,15 @@ def fetch_amazon_reviews(sessionId, username):
 
                 except Exception as e:
                     break
-
-            amazonProduct.objects.filter(Asin=Asin, user=username, sessionId=sessionId).update(Status='completed')
+            if size!=cnt:
+              amazonProduct.objects.filter(Asin=Asin, user=username, sessionId=sessionId).update(Status='completed')
 
     except Exception as e:
         return f'An error occurred during processing: {e}'
     finally:
         browser.quit()
-
-    return 'Successfully fetched and saved Amazon reviews'
+    if size!=cnt:
+      return 'Successfully fetched and saved Amazon reviews'
+    else :
+        return 'no asin is being proccesed'
+      

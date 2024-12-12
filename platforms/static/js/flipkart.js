@@ -61,7 +61,7 @@ function goToPreviousStep(currentStep) {
 // Function to handle 'Finish' button
 function finishProcess() {
     if (sentimentScriptRun) {
-        alert('Process completed!');
+        alert('Process completed! now you can go and see report ');
         // Redirect to home or wherever you want
         window.location.href = '/';
     } else {

@@ -61,7 +61,7 @@ function goToPreviousStep(currentStep) {
 // Function to handle 'Finish' button
 function finishProcess() {
     if (sentimentScriptRun) {
-        alert('Process completed!');
+        alert('Process completed! now you can go and see report ');
         // Redirect to home or wherever you want
         window.location.href = '/';
     } else {
@@ -250,7 +250,6 @@ function runScrappingScript() {
         statusElement.style.backgroundColor = 'orange';
         statusElement.style.color = 'black';
         statusElement.style.border = '2px solid darkorange';
-
         if (data.status === 'success') {
             scrapingScriptRun = true;
         } else if (data.status === 'error') {

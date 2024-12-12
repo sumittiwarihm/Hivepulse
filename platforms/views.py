@@ -54,10 +54,10 @@ def login(request):
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
     elif request.method == 'GET':
-        # You can choose to return a JsonResponse or render a login template
+       
         return JsonResponse({'error': 'GET method is not allowed. Please use POST method to login.'}, status=405)
 
-    # Handle any other HTTP method if needed
+  
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     
@@ -77,7 +77,6 @@ def logout_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def verify_token(request):
-    # If the request reaches this point, the token is valid
     return Response({'valid': True})
 
 #common code end--------------------------------------------------------------------------------
@@ -115,23 +114,16 @@ def playstorePage(request):
 class DownloadAmazonExcelTemplateView(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self,request):
-    # Create a new workbook and select the active worksheet
         workbook = Workbook()
         worksheet = workbook.active
-        # Define the column names
         column_names = ['Asin', 'Brand']
-        # Write the column names to the first row 
         for column_index, column_name in enumerate(column_names, start=1):
             worksheet.cell(row=1, column=column_index, value=column_name)
-        # Create the HttpResponse object with the appropriate headers
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename=excel_template_amazon.xlsx'
-
-        # Save the workbook to the response
         workbook.save(response)
-
         return response
     
 
@@ -140,7 +132,7 @@ class uploadAmazon(APIView):
     # authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]  these are alter nate because we alredy config thisin setting 
     def post(self,request):
-        expected_columns = ['Asin', 'Brand']  # Define the expected column names
+        expected_columns = ['Asin', 'Brand'] 
         if request.method == 'POST':
             form = ExcelUploadForm(request.POST, request.FILES)
             if form.is_valid():
@@ -157,7 +149,7 @@ class uploadAmazon(APIView):
                 # Get username of the logged-in user
                 username = request.user.username
                 # Generate session ID as a string representation of the current time
-                session_id = datetime.now().strftime('%Y%m%d%H%M%S')+"_amazon"  # e.g., '20230829103015'
+                session_id = datetime.now().strftime('%Y%m%d%H%M%S')+"_amazon"  # e.g., '20230829103015_amazon'
                 
                 for row in ws.iter_rows(min_row=2, values_only=True):
                     Asin, Brand = row
@@ -165,10 +157,9 @@ class uploadAmazon(APIView):
                         amazonProduct.objects.create(
                             Asin=Asin,
                             Brand=Brand,
-                            user=username,  # Set the user
-                            sessionId=session_id  # Set the session ID
+                            user=username, 
+                            sessionId=session_id  
                         )
-                      # Send email with session ID
                 subject = 'Amazon Product Upload Session ID'
                 message = f'Dear {username},\n\nYour session ID for the recent Amazon product upload is: {session_id}\n\nRegards,\nYour Team'
                 recipient_list = ['tiwarisumit272181@gmail.com','harishkumar.c@hiveminds.in']
@@ -194,6 +185,7 @@ class runAmazonReviewScrappingScript(APIView):
         username = request.user.username
         try:
             message = fetch_amazon_reviews(sessionId=sessionId, username=username)
+            
             return JsonResponse({'status': 'success', 'message': message})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
@@ -236,21 +228,15 @@ class runAmazonReviewSentimentScript(APIView):
 class downloadFlipkartExcelTemplate(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self,request):
- # Create a new workbook and select the active worksheet
         workbook = Workbook()
         worksheet = workbook.active
-        # Define the column names
         column_names = ['Fsn', 'Brand']
-        # Write the column names to the first row 
         for column_index, column_name in enumerate(column_names, start=1):
             cell = worksheet.cell(row=1, column=column_index, value=column_name)
-        # Create the HttpResponse object with the appropriate headers
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename=excel_template_flipkart.xlsx'
-
-        # Save the workbook to the response
         workbook.save(response)
 
         return response
@@ -261,7 +247,7 @@ class uploadFlipkart(APIView):
     # authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
     def post(self , request):
-        expected_columns = ['Fsn', 'Brand']  # Define the expected column names
+        expected_columns = ['Fsn', 'Brand']  
         if request.method == 'POST':
             form = ExcelUploadForm(request.POST, request.FILES)
             if form.is_valid():
@@ -346,21 +332,15 @@ class downloadPlaystoreExcelTemplate(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self,request):
 
-    # Create a new workbook and select the active worksheet
         workbook = Workbook()
         worksheet = workbook.active
-        # Define the column names
         column_names = ['AppId', 'Brand']
-        # Write the column names to the first row 
         for column_index, column_name in enumerate(column_names, start=1):
             cell = worksheet.cell(row=1, column=column_index, value=column_name)
-        # Create the HttpResponse object with the appropriate headers
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename=excel_template_playstore.xlsx'
-
-        # Save the workbook to the response
         workbook.save(response)
 
         return response
@@ -391,7 +371,7 @@ class uploadPlaystore(APIView):
                     playstoreProduct.objects.create(
                         AppId=AppId,
                         Brand=Brand,
-                        user=username,  # Set the user
+                        user=username,
                         sessionId=session_id 
                         )
                 try:
@@ -556,7 +536,7 @@ def product_sentiment_view(request):
     model_class, id_field = platform_mapping[platform]
 
     try:
-        # Check if any completed products exist for the given session ID
+        # Checking if any completed products exist for the  session ID
         products = model_class.objects.filter(sessionId=session_id, Status='completed')
 
         if not products.exists():
@@ -568,9 +548,8 @@ def product_sentiment_view(request):
             product_brand = getattr(product, 'Brand', None)
 
             if not product_id or not product_brand:
-                continue  # Skip products with missing critical information
+                continue  
 
-            # Fetch reviews associated with the product
             content_type = ContentType.objects.get_for_model(model_class)
             reviews_queryset = review.objects.filter(content_type=content_type, object_id=product.id)
 
@@ -607,7 +586,6 @@ from platforms.models import amazonProduct, flipkartProduct, playstoreProduct, r
 def download_excel(request):
     platform = request.POST.get('platform')
     identifier = request.POST.get('sessionId')
-    
     platform_mapping = {
         'amazon': (amazonProduct, 'Asin'),
         'flipkart': (flipkartProduct, 'Fsn'),
@@ -672,15 +650,14 @@ def sessionInputFlipkart(request):
     return render (request,'platforms/sessionInputFlipkart.html')
 @ login_required
 def getDataForGraph(request):
-    if request.method == 'GET':  # Ensure it's a POST request
+    if request.method == 'GET': 
         return JsonResponse({'error': 'wrong request method'}, status=400)
     body = json.loads(request.body)
-    sessionId = body.get('sessionId')  # Get sessionId from POST data
+    sessionId = body.get('sessionId')  
     if not sessionId:
         return JsonResponse({'error': 'sessionId is required'}, status=400)
 
     try:
-        # Query for products based on the sessionId
         amazon_product = amazonProduct.objects.filter(sessionId=sessionId)
         amazon_product_type = ContentType.objects.get_for_model(amazonProduct)
     except amazonProduct.DoesNotExist:
@@ -692,7 +669,6 @@ def getDataForGraph(request):
     # Dictionary to store counts of positive, negative, and neutral reviews for each ASIN
     asin_sentiment_counts = defaultdict(lambda: {'positiveCount': 0, 'negativeCount': 0, 'neutralCount': 0})
 
-    # Iterate through products and reviews
     try:
         for product in amazon_product:
             product_reviews = review.objects.filter(content_type=amazon_product_type, object_id=product.id)
@@ -710,7 +686,7 @@ def getDataForGraph(request):
         logging.error(f"Error processing reviews or sentiments: {e}")
         return JsonResponse({'error': 'An error occurred while processing reviews and sentiments'}, status=500)
 
-    # Prepare data to send to frontend
+
     data = []
     for asin, counts in asin_sentiment_counts.items():
         data.append({
@@ -973,7 +949,7 @@ def getDataForFlipkartCategorization(request):
 #         return JsonResponse({'error':"only post method is allowed"},status=400)
 #     try:
 #         body=json.loads(request.body)
-#         sessionId=body.get('sessionId')
+#         sessionId=body.get('sessiontransactionutilsAmazonScrappingId')
 #         if not sessionId:
 #             return JsonResponse({'error':"session id is not found or payload is invalid"},status=400)
 #     except json.JSONDecodeError:
@@ -985,9 +961,87 @@ def getDataForFlipkartCategorization(request):
 
 
 
+#----------------------------------------------------------------------django-rq------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# import django_rq
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# from django.contrib.auth.decorators import login_required
+# from .models import TaskStatus
+# import json
+# from django.db import transaction  # Ensure atomic updates
 
 
-             
+# @csrf_exempt
+# @login_required
+# def start_tasks(request):
+#     if request.method != "POST":
+#         return JsonResponse({'error': 'Invalid HTTP method. Use POST.'}, status=405)
+
+#     try:
+#         data = json.loads(request.body)
+#         session_id = data.get('sessionId')
+#         platform=data.get('platform')
+#         if not session_id:
+#             return JsonResponse({'error': 'sessionId is required'}, status=400)
+
+#         user = request.user.username
+#         task_ids = []  # To store Redis task IDs
+
+#         # Ensure the TaskStatus object exists
+#         task, created = TaskStatus.objects.get_or_create(
+#             user=user,
+#             session_id=session_id,
+#             platform=platform,
+#             defaults={
+#                 'scrapping_status': "Pending",
+#                 'sentiment_status': "Pending",
+#             },
+#         )
+
+#         # Get Redis queue
+#         queue = django_rq.get_queue('default')
+
+#         if created:
+#             # If the TaskStatus object was just created, enqueue both tasks
+#             scrapping_task = queue.enqueue('scrapping_task', user, session_id)
+#             sentiment_task = queue.enqueue('sentiment_task', user, session_id)
+#             task_ids.extend([scrapping_task.id, sentiment_task.id])
+
+#         else:
+#             # If the TaskStatus object exists, enqueue only incomplete tasks
+#             if not task.scrapping_completed:
+#                 scrapping_task = queue.enqueue('scrapping_task', user, session_id)
+#                 task_ids.append(scrapping_task.id)
+#                 task.scrapping_status = "Pending"  # Reset scrapping status
+
+#             if not task.sentiment_completed:
+#                 sentiment_task = queue.enqueue('sentiment_task', user, session_id)
+#                 task_ids.append(sentiment_task.id)
+#                 task.sentiment_status = "Pending"  # Reset sentiment status
+
+#             # Save updates to the task entry
+#             with transaction.atomic():
+#                 task.save()
+
+#         if not task_ids:
+#             return JsonResponse({'message': f"All tasks for session {session_id} are already completed."})
+#         return JsonResponse({'message': f"Tasks for session {session_id} started.", 'task_ids': task_ids})
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+
+#     except Exception as e:
+#         return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"}, status=500)
+
+        
+
+
+
+
+
+
+
+
 
 
 
