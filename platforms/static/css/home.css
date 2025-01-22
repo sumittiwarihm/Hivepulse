@@ -285,7 +285,7 @@ body {
     justify-content: space-between;
     align-items: center; /* Center content vertically */
     padding: 20px; /* Add padding for better spacing */
-    margin-top: 60px; /* Ensure content doesn't overlap with navbar */
+    margin-top: 40px; /* Ensure content doesn't overlap with navbar */
     margin-bottom: 60px; /* Ensure content doesn't overlap with footer */
     flex: 1; /* Make content-container flexible to fill remaining space */
     box-sizing: border-box; /* Include padding and border in element's total width and height */
@@ -321,17 +321,18 @@ body {
 }
 
 .platform-selection h2 {
-    font-size: 18px;
-    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
     color: #264653;
 }
 
-.platform-selection label {
+/* .platform-selection label {
     display: block;
     margin-bottom: 8px;
-    font-size: 16px;
-    color: #f4a261;
-}
+    font-size: 14px;
+    color: black;
+} */
 
 .platform-selection select {
     width: 100%; /* Make the select box fill available width */
@@ -345,7 +346,7 @@ body {
 
 .platform-selection button {
     margin-top: 20px;
-    background-color: #2a9d8f;
+    background-color: #008CBA;
     color: white;
     padding: 8px 12px;
     border-radius: 5px;
@@ -456,12 +457,16 @@ body {
     }
 
     .content-container {
-        padding: 10px;
+        background-color: #264653;
     }
 }
 body {
     overflow: hidden; /* Hide scrollbars */
   }
   
+#dropdownMenuButton{
 
+    background-color:black;
+
+}
 

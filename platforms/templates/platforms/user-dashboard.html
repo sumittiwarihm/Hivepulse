@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin-top: 80px; 
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .spinner {
+            display: none;
+            text-align: center;
+            font-size: 20px;
+            color: #555;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-right: 10px;
+        }
+
+        select {
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        table caption {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        td {
+            background-color: #f9f9f9;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e0f7fa;
+        }
+
+        .no-data {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #555;
+            padding: 20px;
+        }
+        .title {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100vw; 
+    padding: 20px 20px;
+    text-align: center;
+    margin: 0; 
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+body {
+    margin-top: 80px; 
+}
+.title .logo h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #e9c46a;
+}
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo,
+.title .go-home {
+    flex: 0 0 auto;
+}
+/* Go Home */
+.go-home {
+    text-align: right;
+}
+
+.go-home a {
+    padding: 8px 12px;
+    background-color: transparent;
+    color: #e9c46a;
+    text-decoration: none;
+    border: 2px solid #e9c46a;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 16px;
+}
+
+.go-home a:hover {
+    background-color: #e9c46a;
+    color: #264653;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    margin: 10px 5px 0 5px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+.title {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100vw; 
+    padding: 20px 20px;
+    text-align: center;
+    margin: 0; 
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; 
+    box-sizing: border-box;
+}
+
+body {
+    margin-top: 80px; 
+}
+
+
+.title .logo h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #e9c46a;
+}
+
+
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo,
+.title .go-home {
+    flex: 0 0 auto;
+}
+
+    </style>
+</head>
+
+<body onload="myFunction()">
+    <div class="title" style="display: flex ; justify-content:space-between ;">
+        <div class="go-home">
+            <a href="{% url 'home' %}">Home</a>
+        </div> 
+    </div> 
+    <div class="container">
+        <div class="top-bar">
+            <div>
+                <label for="platform-select">Select Platform:</label>
+                <select id="platform-select">
+                    <option value="all">All Platforms</option>
+                </select>
+            </div>
+        </div>
+
+        <h1 id="heading">All request by user:  </h1>
+
+        <div id="status-message" class="status"></div>
+        <div id="dashboard-container"></div>
+
+        <div class="spinner" id="spinner">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        const download = "{% url 'getDataForUserDashboard' %}";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem('access');
+            const dashboardContainer = document.getElementById('dashboard-container');
+            const statusMessage = document.getElementById('status-message');
+            const spinner = document.getElementById('spinner');
+            const platformSelect = document.getElementById('platform-select');
+            let dashboardData = {};
+
+            if (!token) {
+                alert('No access token found. Please log in again.');
+                window.location.href = '/login-page/';
+                return;
+            }
+
+            spinner.style.display = 'block';
+            const user = localStorage.getItem('username');
+            
+            fetch(download, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user: user })
+            })
+            .then((response) => {
+                spinner.style.display = 'none';
+                if (response.status === 401) {
+                    alert('Session expired. Please log in again.');
+                    window.location.href = '/login-page/';
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data.');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log('Dashboard data:', data);
+                dashboardData = data;
+                populatePlatformOptions(Object.keys(data));
+                renderDashboard(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                statusMessage.innerText = 'An error occurred while fetching data.';
+                statusMessage.className = 'status error';
+            });
+
+            function populatePlatformOptions(platforms) {
+                platformSelect.innerHTML = '<option value="all">All Platforms</option>';
+                platforms.forEach(platform => {
+                    const option = document.createElement('option');
+                    option.value = platform;
+                    option.innerText = platform.charAt(0).toUpperCase() + platform.slice(1);
+                    platformSelect.appendChild(option);
+                });
+
+                platformSelect.addEventListener('change', () => {
+                    const selectedPlatform = platformSelect.value;
+                    if (selectedPlatform === 'all') {
+                        renderDashboard(dashboardData);
+                    } else {
+                        renderDashboard({ [selectedPlatform]: dashboardData[selectedPlatform] });
+                    }
+                });
+            }
+
+            function renderDashboard(data) {
+                dashboardContainer.innerHTML = ''; 
+                let hasData = false;
+
+                for (const platform in data) {
+                    const platformData = data[platform];
+                    if (platformData.length === 0) continue;
+                    hasData = true;
+
+                    const platformTable = document.createElement('table');
+                    const platformTitle = document.createElement('caption');
+                    platformTitle.innerText = platform.charAt(0).toUpperCase() + platform.slice(1);
+                    platformTable.appendChild(platformTitle);
+
+                    const headerRow = document.createElement('tr');
+                    headerRow.innerHTML = `
+                        <th>Session ID</th>
+                        <th>SKU</th>
+                        <th>Status</th>
+                    `;
+                    platformTable.appendChild(headerRow);
+
+                    platformData.forEach((session) => {
+                        const productEntries = Object.entries(session.productStatus);
+                        productEntries.forEach(([productId, status], index) => {
+                            const row = document.createElement('tr');
+
+                            if (index === 0) {
+                                const sessionIdCell = document.createElement('td');
+                                sessionIdCell.innerText = session.sessionId;
+                                sessionIdCell.rowSpan = productEntries.length;
+                                row.appendChild(sessionIdCell);
+                            }
+
+                            const skuCell = document.createElement('td');
+                            skuCell.innerText = productId;
+                            row.appendChild(skuCell);
+
+                            const statusCell = document.createElement('td');
+                            statusCell.innerText = status;
+                            row.appendChild(statusCell);
+
+                            platformTable.appendChild(row);
+                        });
+                    });
+
+                    dashboardContainer.appendChild(platformTable);
+                }
+
+                if (!hasData) {
+                    dashboardContainer.innerHTML = '<p class="no-data">No data available for the selected platform.</p>';
+                }
+            }
+        });
+        function myFunction() {
+            const headingElement = document.getElementById("heading"); 
+            headingElement+=localStorage.username.user
+       }
+    </script>
+</body>
+</html>

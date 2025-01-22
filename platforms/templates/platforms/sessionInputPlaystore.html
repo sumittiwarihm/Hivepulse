@@ -64,8 +64,6 @@
         form button:hover {
             background-color: #45a049;
         }
-
-      
         .tab {
             overflow: hidden;
             background-color: #f1f1f1;
@@ -136,16 +134,12 @@
 body {
     margin-top: 80px; 
 }
-
-
 .title .logo h2 {
     font-size: 32px;
     font-weight: bold;
     margin-right: 10px;
     color: #e9c46a;
 }
-
-
 .title .go-home a {
     color: #e9c46a;
     text-decoration: none;
@@ -195,7 +189,57 @@ body {
     font-size: 16px;
     border-radius: 5px;
 }
+.title {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100vw; 
+    padding: 20px 20px;
+    text-align: center;
+    margin: 0; 
+    position: fixed;
+    top: 0; 
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000; 
+    box-sizing: border-box;
+}
 
+body {
+    margin-top: 80px; 
+}
+
+
+.title .logo h2 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-right: 10px;
+    color: #e9c46a;
+}
+
+
+.title .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.title .go-home a:hover {
+    color: #fff;
+}
+
+
+.title > div {
+    flex: 1;
+    text-align: center;
+}
+
+.title .logo,
+.title .go-home {
+    flex: 0 0 auto;
+}
 
     </style>
 </head>

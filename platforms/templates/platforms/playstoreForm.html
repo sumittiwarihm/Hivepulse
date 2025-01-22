@@ -75,7 +75,7 @@ body {
         <div class="progress-bar bg-success" id="progress-bar"></div>
      
         <div class="progress-step">
-            Step <span id="current-step" class="text-success">1</span> of 4 
+            Step <span id="current-step" class="text-success">1</span> of 3
         </div>
     </div>
     
@@ -116,19 +116,19 @@ body {
         <div id="step-3" class="step" style="display: none;">
             <div class="script-container">
                 <div class="script-section">
-                    <h2>Run Scrapping script from here </h2>
+                    <h2>Run Scripts</h2>
                     <label for="scrapping-session-id">Session ID:</label>
                     <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
-                    <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run Scrapping Script</button>
+                    <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run</button>
                     <p id="scrappingScript-status"></p>
                     <br>
                     <button class="btn btn-secondary" onclick="goToPreviousStep(3)">Previous</button>
-                    <button class="btn btn-primary" onclick="goToNextStep(3)">Next</button>
+                    <button class="btn btn-success" onclick="finishProcess()">Finish</button>
                 </div>
             </div>
         </div>
 
-        <!-- Step 4: Run Sentiment Script -->
+        <!-- Step 4: Run Sentiment Script
         <div id="step-4" class="step" style="display: none;">
             <div class="script-container">
                 <div class="script-section">
@@ -142,7 +142,7 @@ body {
                     <button class="btn btn-success" onclick="finishProcess()">Finish</button>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Spinner -->
         <div id="spinner">

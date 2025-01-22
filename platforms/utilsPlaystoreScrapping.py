@@ -17,13 +17,13 @@ def fetch_playstore_reviews(sessionId, username):
             all_reviews = []
             fetched_reviews = 0
 
-            while fetched_reviews < 100:
+            while fetched_reviews < 1500:
                 reviews_data, continuation_token = reviews(
                     AppId,
                     lang='en',
                     country='in',
                     sort=Sort.NEWEST,
-                    count=min(100, 100 - fetched_reviews),
+                    count=min(1500, 1500 - fetched_reviews),
                     continuation_token=continuation_token
                 )
                 
@@ -36,7 +36,7 @@ def fetch_playstore_reviews(sessionId, username):
 
                 print(f'Fetched {len(reviews_data)} reviews for {AppId}...')
 
-                if not continuation_token or fetched_reviews >= 100:
+                if not continuation_token or fetched_reviews >= 1500:
                     break
 
             print(f'Total reviews fetched for {AppId}: {len(all_reviews)}')
@@ -69,3 +69,5 @@ def fetch_playstore_reviews(sessionId, username):
             print(f'Error fetching reviews for AppId {AppId}: {e}')
 
     return 'Successfully fetched and saved Google Play Store reviews'
+
+

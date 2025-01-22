@@ -14,10 +14,10 @@
         <div class="logo">
             <h4>HivePulse</h4>
         </div>
-        <div class="menu dropdown">
+        <div class="menu-dropdown">
             <!-- Updated dropdown button and menu style to match the provided code -->
             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                👤
+                👨🏻‍🔧
             </button>
             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
                 <li><span id="username" class="dropdown-item username"></span></li>
@@ -37,6 +37,9 @@
                     <img src="{% static 'images/playstore.png' %}"
                     width="25" height="20"> Generic graphical
                     report</a></li>
+                <li><a id="getSentimentResultButton" class="dropdown-item" href="{% url 'user_dashboard' %}">
+                        <img src="{% static 'images/dashboard-image.png' %}"
+                        width="25" height="20"> User's Requests Status</a></li>
                 <li><a id="logoutButton" class="dropdown-item logout-button" href="#" style="display:none;">
                     <img src="{% static 'images/logout.png' %}"
                     width="25" height="20"> Logout</a></li>
@@ -51,8 +54,8 @@
         </div>
         <div class="right-section">
             <div class="platform-selection">
-                <h2>Choose a platform to do a new request</h2>
-                <label for="platform">Choose a platform:</label>
+                <h2>Choose a Platform to Do a New Request</h2>
+                <!-- <label for="platform">Choose a Platform:</label> -->
                 <select id="platform" name="platform" onchange="updateFormAction()">
                     <option value="amazonPage">Amazon</option>
                     <option value="flipkartPage">Flipkart</option>

@@ -29,6 +29,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# Celery Configuration
+CELERY_BROKER_URL = 'amqp://localhost'  # RabbitMQ broker URL
+CELERY_RESULT_BACKEND = 'rpc://'        # Using RabbitMQ's RPC for results
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 
 # Application definition
 
@@ -42,17 +47,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'platforms',
-    'django_rq',
 ]
 
-RQ_QUEUES = {
-    'default': {
-        'HOST': 'localhost',
-        'PORT': 6379,
-        'DB': 0,
-        'DEFAULT_TIMEOUT': 360,
-    },
-}
+# RQ_QUEUES = {
+#     'default': {
+#         'HOST': 'localhost',
+#         'PORT': 6379,
+#         'DB': 0,
+#         'DEFAULT_TIMEOUT': 360,
+#     },
+# }
 
 
 REST_FRAMEWORK = {
@@ -200,6 +204,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
     os.path.join(BASE_DIR, 'platforms' , "static"),
 ] 
+import os
 
 
 # Default primary key field type
@@ -208,8 +213,8 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Replace 'smtp.example.com' with your SMTP server hostname
-EMAIL_PORT = 587  # Replace '587' with your SMTP server port number
-EMAIL_HOST_USER = 'sumit.kumar@hiveminds.in'  # Replace 'your_email@example.com' with your email address
-EMAIL_HOST_PASSWORD = 'dnzl fnqk dptd iaqo'  # Replace 'your_email_password' with your email password
+EMAIL_HOST = 'smtp.gmail.com'  
+EMAIL_PORT = 587 
+EMAIL_HOST_USER = 'sumit.kumar@hiveminds.in' 
+EMAIL_HOST_PASSWORD = 'dnzl fnqk dptd iaqo'  
 EMAIL_USE_TLS = True 

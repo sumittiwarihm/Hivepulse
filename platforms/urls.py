@@ -31,6 +31,16 @@ urlpatterns = [
     path('dataforPlaystoreCategorization/',views.getDataforPlaystoreCategorization,name='getDataforPlaystoreCategorization'), 
     path('dataforAmazonCategorization/',views.getDataForAmazonCategorization,name='getDataForAmazonCategorization')  ,
     path('dataforFlipkartCategorization/',views.getDataForFlipkartCategorization,name='getDataForFlipkartCategorization'),
-    path('RawReport/',views.GetRawPage,name="rawReportPage") 
+    path('RawReport/',views.GetRawPage,name="rawReportPage") ,
+    # path('taskQueue/',views.sheduleTask,name="taskQueue")
+    # path('factorial/<int:number>/', views.enqueue_factorial, name='enqueue_factorial'),
+    path('enqueue/', views.enqueue_task, name='enqueue_task'),
+    path("getDataForUserDashboard/",views.getDataForUserDashboard,name="getDataForUserDashboard"),
+    path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
+    path('generate-wordclouds/', views.generate_word_clouds, name='generate_wordclouds'),
+    path('download-wordclouds/', views.download_word_clouds, name='download_wordclouds'),
+    path('renderWordCloud/',views.renderWordCloud ,name='renderWordCloud')
+    
 ]
+
 

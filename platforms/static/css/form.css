@@ -162,7 +162,7 @@ body {
 
 .download-section button, .upload-section button, .script-section button {
     padding: 12px 20px;
-    background-color: #2a9d8f;
+    background-color:#008CBA;
     color: white;
     border: none;
     border-radius: 5px;
@@ -324,5 +324,9 @@ input[type="text"] {
 /* Additional Styling */
 .step {
     width: 100%;
+}
+#scrappingScript-status{
+    width: 30%;
+    
 }
 

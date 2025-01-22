@@ -67,18 +67,16 @@ class sentimentResult(models.Model):
     sessionId = models.CharField(max_length=100) 
     estimatedResult= models.CharField(max_length=50 ,default='')  # it is not nesccesary to store because it can be computed on the fly
 
-
-
 class TaskStatus(models.Model):
+    class Status(models.TextChoices):
+         PENDING='pending', 'Pending'
+         PROCESSING='processing', 'Processing',
+         COMPLETED= 'completed', 'Completed',
+         FAILED= 'failed','Failed'
     user = models.CharField(max_length=255)  
     session_id = models.CharField(max_length=255)  
-    scrapping_status = models.CharField(max_length=50, default="Pending")  
-    sentiment_status = models.CharField(max_length=50, default="Pending")  
-    scrapping_completed = models.BooleanField(default=False) 
-    sentiment_completed = models.BooleanField(default=False)  
-    created_at = models.DateTimeField(auto_now_add=True)  
-    updated_at = models.DateTimeField(auto_now=True) 
-    platform=models.CharField(max_length=255)
+    scrapping_status = models.CharField(max_length=10, choices=Status.choices)
+    sentiment_status=models.CharField(max_length=20,choices=Status.choices)
     class Meta:
         unique_together = ('user', 'session_id')  
     def __str__(self):

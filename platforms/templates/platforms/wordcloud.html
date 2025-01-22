@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud with D3.js</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-cloud/build/d3.layout.cloud.js"></script>
+    <style>
+        .wordcloud-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .wordcloud {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+        }
+        .title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .cloud {
+            width: 300px;
+            height: 300px;
+        }
+        .download-btn {
+            margin-top: 10px;
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #007BFF;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .download-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="wordcloud-container"></div>
+
+    <script>
+        const jsonData = {
+            "sessionId": "12345",
+            "titles": {
+                "Revlon": {
+                    "positive": [
+                        "this product is amazing this product is amazing this product is amazing this product is amazingthis product is amazing this product is amazing this product is amazing this product is amazing this product is amazingthis product is amazing",
+                        "great value for money",
+                        "highly recommended"
+                    ],
+                    "negative": [
+                        "not worth the price",
+                        "poor battery life",
+                        "bad quality"
+                    ],
+                    "neutral": [
+                        "average experience",
+                        "okay product",
+                        "nothing special"
+                    ]
+                },
+            }
+        };
+
+        // Preprocess data into word-frequency format
+        function preprocessText(sentences) {
+            const wordMap = {};
+            sentences.join(' ') // Combine all sentences into a single string
+                .split(/\s+/)  // Split into individual words
+                .forEach(word => {
+                    word = word.toLowerCase().replace(/[^a-z]/g, ''); // Normalize words
+                    if (word) wordMap[word] = (wordMap[word] || 0) + 1;
+                });
+            return Object.entries(wordMap).map(([text, size]) => ({ text, size }));
+        }
+
+        // Generate word cloud using D3.js
+        function generateWordCloud(words, container, downloadButton) {
+            const width = 300;
+            const height = 300;
+
+            const layout = d3.layout.cloud()
+                .size([width, height])
+                .words(words)
+                .padding(5)
+                .rotate(() => ~~(Math.random() * 2) * 90)
+                .fontSize(d => d.size * 5) // Scale font size
+                .on("end", draw);
+
+            layout.start();
+
+            function draw(words) {
+                const svg = d3.select(container)
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", `translate(${width / 2},${height / 2})`)
+                    .selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                    .style("font-size", d => d.size + "px")
+                    .style("fill", () => `hsl(${Math.random() * 360}, 70%, 50%)`)
+                    .attr("text-anchor", "middle")
+                    .attr("transform", d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+                    .text(d => d.text);
+
+                // Add download functionality
+                const svgElement = container.querySelector("svg");
+                downloadButton.addEventListener("click", () => downloadSVGAsImage(svgElement, "wordcloud.png"));
+            }
+        }
+
+        // Convert SVG to image and download
+        function downloadSVGAsImage(svg, filename) {
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+
+            canvas.width = svg.getAttribute("width");
+            canvas.height = svg.getAttribute("height");
+
+            img.onload = function () {
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(url);
+
+                // Create download link
+                const link = document.createElement("a");
+                link.download = filename;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            };
+            img.src = url;
+        }
+
+        // Main function to process and render word clouds
+        function renderWordClouds(data) {
+            const container = document.getElementById('app');
+            const sessionId = data.sessionId;
+            const titles = data.titles;
+
+            for (const [title, categories] of Object.entries(titles)) {
+                for (const [category, sentences] of Object.entries(categories)) {
+                    const words = preprocessText(sentences);
+
+                    // Create container for each word cloud
+                    const cloudContainer = document.createElement('div');
+                    cloudContainer.className = 'wordcloud';
+
+                    // Add title
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'title';
+                    titleDiv.innerText = `${sessionId} - ${title} (${category})`;
+                    cloudContainer.appendChild(titleDiv);
+
+                    // Add cloud
+                    const cloudDiv = document.createElement('div');
+                    cloudDiv.className = 'cloud';
+                    cloudContainer.appendChild(cloudDiv);
+
+                    // Add download button
+                    const downloadButton = document.createElement('a');
+                    downloadButton.className = 'download-btn';
+                    downloadButton.href = "#";
+                    downloadButton.innerText = "Download";
+                    cloudContainer.appendChild(downloadButton);
+
+                    // Append container and generate cloud
+                    container.appendChild(cloudContainer);
+                    generateWordCloud(words, cloudDiv, downloadButton);
+                }
+            }
+        }
+
+        renderWordClouds(jsonData);
+    </script>
+</body>
+</html>

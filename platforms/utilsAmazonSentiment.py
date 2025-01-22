@@ -1,5 +1,4 @@
 # utilsAmazonScrapping.py
-
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
 from django.contrib.contenttypes.models import ContentType

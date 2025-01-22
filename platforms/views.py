@@ -41,7 +41,6 @@ def login(request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
-
         user = authenticate(username=username, password=password)
         if user is not None:
             refresh = RefreshToken.for_user(user)
@@ -54,7 +53,6 @@ def login(request):
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
     elif request.method == 'GET':
-       
         return JsonResponse({'error': 'GET method is not allowed. Please use POST method to login.'}, status=405)
 
   
@@ -73,7 +71,7 @@ def logout_view(request):
 # common code-------------------------------------------------------------------------------
 
 
-  # this is function way of writing django rst vie funcional   
+  # this is function way of writing django rst view funcional   
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def verify_token(request):
@@ -177,16 +175,16 @@ class uploadAmazon(APIView):
 import json
 from django.http import JsonResponse
 from rest_framework.views import APIView
-from platforms.utilsAmazonScrapping import fetch_amazon_reviews
+# from platforms.utilsAmazonScrapping import fetch_amazon_reviews
+from platforms.task import fetch_amazon_reviews
 class runAmazonReviewScrappingScript(APIView):
     def post(self, request):
         data = json.loads(request.body)
         sessionId = data.get('sessionId')
         username = request.user.username
         try:
-            message = fetch_amazon_reviews(sessionId=sessionId, username=username)
-            
-            return JsonResponse({'status': 'success', 'message': message})
+            message = fetch_amazon_reviews.delay(sessionId=sessionId, username=username) 
+            return JsonResponse({'status': 'success', 'message': "request has been submitted"})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
@@ -286,17 +284,16 @@ class uploadFlipkart(APIView):
 
 # views.py
 
-from .utilsFlipkartScrapping import fetch_flipkart_reviews
-
+# from .utilsFlipkartScrapping import fetch_flipkart_reviews
+from platforms.task import fetch_flipkart_reviews
 class runFlipkartReviewScrappingScript(APIView):
     def post(self, request):
         data = json.loads(request.body)
         sessionId = data.get('sessionId')
         username = request.user.username
-
         try:
-            message = fetch_flipkart_reviews(sessionId=sessionId, username=username)
-            return JsonResponse({'status': 'success', 'message': message})
+            fetch_flipkart_reviews.delay(sessionId=sessionId, username=username)
+            return JsonResponse({'status': 'success', 'message':"Task Submitted Successfully"})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
@@ -312,7 +309,6 @@ class runFlipkartReviewSentimentScript(APIView):
             data = json.loads(request.body)
             sessionId = data.get('sessionId')
             username = request.user.username
-
             try:
                 message = perform_flipkart_sentiment_analysis(sessionId=sessionId, username=username)
                 return JsonResponse({'status': 'success', 'message': message})
@@ -331,7 +327,6 @@ class runFlipkartReviewSentimentScript(APIView):
 class downloadPlaystoreExcelTemplate(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self,request):
-
         workbook = Workbook()
         worksheet = workbook.active
         column_names = ['AppId', 'Brand']
@@ -342,7 +337,6 @@ class downloadPlaystoreExcelTemplate(APIView):
         )
         response['Content-Disposition'] = 'attachment; filename=excel_template_playstore.xlsx'
         workbook.save(response)
-
         return response
 
 
@@ -391,7 +385,8 @@ class uploadPlaystore(APIView):
 
 # views.py
 
-from .utilsPlaystoreScrapping import fetch_playstore_reviews
+# from .utilsPlaystoreScrapping import fetch_playstore_reviews
+from platforms.task import fetch_playstore_reviews
 
 class runPlaystoreReviewScrappingScript(APIView):
     def post(self, request):
@@ -399,16 +394,12 @@ class runPlaystoreReviewScrappingScript(APIView):
             data = json.loads(request.body)
             sessionId = data.get('sessionId')
             username = request.user.username
-
             try:
-                message = fetch_playstore_reviews(sessionId=sessionId, username=username)
-                return JsonResponse({'status': 'success', 'message': message})
+                message = fetch_playstore_reviews.delay(sessionId=sessionId, username=username)
+                return JsonResponse({'status': 'success', 'message': "request submitted successfully"})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': str(e)})
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
-
-
 
 # views.py
 
@@ -1032,6 +1023,200 @@ def getDataForFlipkartCategorization(request):
 
 #     except Exception as e:
 #         return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"}, status=500)
+
+
+#===========================task queue==========================================================================================================
+def fun( a,b):
+    while a+b<200000000000:
+        a=a+1
+        b=b+1
+
+
+
+# import django_rq
+# @csrf_exempt
+# def sheduleTask(request):
+#     if request.method!="POST":
+#         return JsonResponse({'error':"invalid request method"},status=404)
+#     django_rq.enqueue(fun, 4, 3)
+#     return HttpResponse("Task has been enqueued!")
+    
+# from .task import factorial_task , fibonacci
+from platforms.task import fibonacci ,factorial_task,fetch_flipkart_reviews
+
+@csrf_exempt
+def enqueue_task(request):
+    # number = int(request.GET.get("number", 100))  
+    task = fetch_flipkart_reviews.delay('20250120123431_flipkart','sumit')  
+    # task= fibonacci.delay(100)
+    return JsonResponse({"task_id": task.id, "status": "Task enqueued!"})
+
+
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from collections import defaultdict
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+import json
+
+# View for serving the frontend HTML page
+# @login_required  # Ensure the user is logged in
+@csrf_exempt
+def user_dashboard(request):
+    return render(request, 'platforms/user-dashboard.html')
+
+# API endpoint for getting the dashboard data
+@csrf_exempt
+# @login_required  # Ensure the user is logged in
+def getDataForUserDashboard(request):
+    # data = json.loads(request.body)
+    user="sumit"
+    if not user:
+        return JsonResponse({'status': 'error', 'message': 'User not provided'}, status=400)
+
+    # Query data from all three models for the given user
+    playstore_products = playstoreProduct.objects.filter(user=user)
+    flipkart_products = flipkartProduct.objects.filter(user=user)
+    amazon_products = amazonProduct.objects.filter(user=user)
+
+    # Helper function to group data by sessionId
+    def group_by_session(products, id_field):
+        grouped_data = defaultdict(dict)
+        for product in products:
+            grouped_data[product.sessionId][getattr(product, id_field)] = product.Status
+        return grouped_data
+
+    # Group data by sessionId for each platform
+    playstore_data = group_by_session(playstore_products, "AppId")
+    flipkart_data = group_by_session(flipkart_products, "Fsn")
+    amazon_data = group_by_session(amazon_products, "Asin")
+
+    # Combine data into a single response structure
+    response_data = {
+        "playstore": [
+            {"sessionId": session_id, "productStatus": product_status}
+            for session_id, product_status in playstore_data.items()
+        ],
+        "flipkart": [
+            {"sessionId": session_id, "productStatus": product_status}
+            for session_id, product_status in flipkart_data.items()
+        ],
+        "amazon": [
+            {"sessionId": session_id, "productStatus": product_status}
+            for session_id, product_status in amazon_data.items()
+        ],
+    }
+
+    # Return the data as JSON
+    return JsonResponse(response_data)
+
+
+import os
+import zipfile
+from django.http import JsonResponse, HttpResponse
+from wordcloud import WordCloud
+# Directory to store word cloud images
+CLOUD_DIR = os.path.join('static', 'wordclouds')
+
+# Ensure the directory exists
+if not os.path.exists(CLOUD_DIR):
+    os.makedirs(CLOUD_DIR)
+
+# Function to generate the JSON structure
+def get_review_data():
+    return {
+        "sessionId": "12345",
+        "titles": {
+            "title1": {
+                "positive": ["this product is very good"],
+                "negative": ["not worth the price"],
+                "neutral": ["average experience"]
+            },
+            "title2": {
+                "positive": ["great quality"],
+                "negative": ["poor packaging"],
+                "neutral": ["decent service"]
+            }
+        }
+    }
+
+# Function to clean up old word clouds
+def delete_existing_wordclouds():
+    for file in os.listdir(CLOUD_DIR):
+        if file.endswith('.png') or file.endswith('.zip'):
+            os.remove(os.path.join(CLOUD_DIR, file))
+
+# View to generate and serve word clouds
+@csrf_exempt
+def generate_word_clouds(request):
+    # Clean up old files before processing new request
+    delete_existing_wordclouds()
+    data = get_review_data()
+    session_id = data["sessionId"]
+    titles = data["titles"]
+    image_urls = []
+    for title, sentiments in titles.items():
+        for sentiment, reviews in sentiments.items():
+            text = " ".join(reviews)
+
+            # Generate word cloud
+            wordcloud = WordCloud(width=800, height=400, background_color="white").generate(text)
+
+            # Save the image
+            filename = f"{session_id}_{title}_{sentiment}.png"
+            filepath = os.path.join(CLOUD_DIR, filename)
+            wordcloud.to_file(filepath)
+
+            # Add URL for frontend display
+            image_urls.append(f"/static/wordclouds/{filename}")
+
+    return JsonResponse({"images": image_urls})
+
+# View to download all word clouds as a ZIP and delete them after serving
+def download_word_clouds(request):
+    data = get_review_data()
+    session_id = data["sessionId"]
+
+    zip_filename = f"wordclouds_{session_id}.zip"
+    zip_filepath = os.path.join(CLOUD_DIR, zip_filename)
+
+    # Create ZIP file with generated word clouds
+    with zipfile.ZipFile(zip_filepath, 'w') as zipf:
+        for file in os.listdir(CLOUD_DIR):
+            if file.startswith(session_id) and file.endswith('.png'):
+                zipf.write(os.path.join(CLOUD_DIR, file), file)
+
+    # Serve the ZIP file
+    with open(zip_filepath, 'rb') as zip_file:
+        response = HttpResponse(zip_file.read(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename={zip_filename}'
+
+    # Delete the ZIP file and images after serving
+    # delete_existing_wordclouds()
+    return response
+@csrf_exempt
+def renderWordCloud(request):
+    return render(request, 'platforms/wordcloud.html')
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+
+
+
+
+
 
         
 

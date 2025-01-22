@@ -4,10 +4,10 @@ let fileUploaded = false;
 let scrapingScriptRun = false;
 let sentimentScriptRun = false;
 let currentStep = 1;
-function updateProgressBar(step) {
+function updateProgressBar(step){
     const progressBar = document.getElementById('progress-bar');
     const currentStepText = document.getElementById('current-step');
-    const totalSteps = 4;
+    const totalSteps = 3;
     const percentage = (step / totalSteps) * 100;
     progressBar.style.width = percentage + '%';
     currentStepText.innerText = step;
@@ -34,19 +34,20 @@ function goToNextStep(currentStep) {
             nextStepDiv.style.display = 'block';
             updateProgressBar(currentStep + 1);
         }
-    } else if (currentStep === 3) {
-        // Validate that the scraping script has been run successfully
-        if (scrapingScriptRun) {
-            currentStepDiv.style.display = 'none';
-            nextStepDiv.style.display = 'block';
-            updateProgressBar(currentStep + 1);
-        } else {
-            alert('you are procceding without running the scrappping script');
-            currentStepDiv.style.display = 'none';
-            nextStepDiv.style.display = 'block';
-            updateProgressBar(currentStep + 1);
-        }
-    }
+    } 
+    // else if (currentStep === 3) {
+    //     // Validate that the scraping script has been run successfully
+    //     if (scrapingScriptRun) {
+    //         currentStepDiv.style.display = 'none';
+    //         nextStepDiv.style.display = 'block';
+    //         updateProgressBar(currentStep + 1);
+    //     } else {
+    //         alert('you are procceding without running the scrappping script');
+    //         currentStepDiv.style.display = 'none';
+    //         nextStepDiv.style.display = 'block';
+    //         updateProgressBar(currentStep + 1);
+    //     }
+    // }
 }
 
 // Function to go to the previous step
@@ -61,11 +62,11 @@ function goToPreviousStep(currentStep) {
 // Function to handle 'Finish' button
 function finishProcess() {
     if (sentimentScriptRun) {
-        alert('Process completed! now you can go and see report ');
+        alert('Process completed! now you can go and see the status of yor task from status bar');
         // Redirect to home or wherever you want
         window.location.href = '/';
     } else {
-        alert('you are navigating out without running the sentiment script ');
+        alert('you are navigating out without running scripts you may need to comeback');
         window.location.href = '/';
     }
 }
@@ -172,7 +173,7 @@ async function uploadFile() {
                 document.getElementById('overlay').style.display = 'block';
                 // Auto-fill the session ID in the next steps
                 document.getElementById('scrapping-session-id').value = data.sessionId;
-                document.getElementById('sentiment-session-id').value = data.sessionId;
+                // document.getElementById('sentiment-session-id').value = data.sessionId;
             } else {
                 alert('Error: ' + data.error);
             }
@@ -252,6 +253,7 @@ function runScrappingScript() {
         statusElement.style.border = '2px solid darkorange';
         if (data.status === 'success') {
             scrapingScriptRun = true;
+            sentimentScriptRun=true;
         } else if (data.status === 'error') {
             document.getElementById('run-scrappingScript-btn').disabled = false;
             document.getElementById('scrappingScript-status').style.backgroundColor = 'orange';
@@ -269,74 +271,74 @@ function runScrappingScript() {
 }
 
 // Run Sentiment Script
-function runSentimentScript() {
-    const token = localStorage.getItem('access');
-    if (!token) {
-        alert('No access token found. Please log in again.');
-        window.location.href = '/login-page/';
-        return;
-    }
-    const sessionId = document.getElementById("sentiment-session-id").value;
-    if (!sessionId) {
-        alert('Type your session ID');
-        return;
-    }
-    isScriptRunning = true;
-    disablePage();
-    document.getElementById('spinner').style.display = 'block';
-    document.getElementById('sentimentScript-status').innerText = "Running...";
+// function runSentimentScript() {
+//     const token = localStorage.getItem('access');
+//     if (!token) {
+//         alert('No access token found. Please log in again.');
+//         window.location.href = '/login-page/';
+//         return;
+//     }
+//     const sessionId = document.getElementById("sentiment-session-id").value;
+//     if (!sessionId) {
+//         alert('Type your session ID');
+//         return;
+//     }
+//     isScriptRunning = true;
+//     disablePage();
+//     document.getElementById('spinner').style.display = 'block';
+//     document.getElementById('sentimentScript-status').innerText = "Running...";
 
-    fetch(runSentimentUrl, {
-       method: 'POST', 
-       headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-        'Content-Type': 'application/json'
-       },
-       body: JSON.stringify({
-           sessionId: sessionId,
-       })
-    })
-    .then(response => {
-        if (response.status === 401) {
-            isScriptRunning = false;
-            alert('Session expired. Please log in again.');
-            window.location.href = '/login-page/';
-            return;
-        }
-        if (!response.ok) {
-            document.getElementById('sentimentScript-status').style.backgroundColor = 'red';
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        document.getElementById('spinner').style.display = 'none';
-        const statusElement = document.getElementById('sentimentScript-status');
-        statusElement.innerText = data.message;
-        statusElement.style.display = 'flex';
-        statusElement.style.justifyContent = 'center';
-        statusElement.style.backgroundColor = 'green';
-        statusElement.style.color = 'black';
-        statusElement.style.border = '2px solid darkorange';
+//     fetch(runSentimentUrl, {
+//        method: 'POST', 
+//        headers: {
+//         'Authorization': `Bearer ${token}`,
+//         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+//         'Content-Type': 'application/json'
+//        },
+//        body: JSON.stringify({
+//            sessionId: sessionId,
+//        })
+//     })
+//     .then(response => {
+//         if (response.status === 401) {
+//             isScriptRunning = false;
+//             alert('Session expired. Please log in again.');
+//             window.location.href = '/login-page/';
+//             return;
+//         }
+//         if (!response.ok) {
+//             document.getElementById('sentimentScript-status').style.backgroundColor = 'red';
+//             throw new Error('Network response was not ok');
+//         }
+//         return response.json();
+//     })
+//     .then(data => {
+//         document.getElementById('spinner').style.display = 'none';
+//         const statusElement = document.getElementById('sentimentScript-status');
+//         statusElement.innerText = data.message;
+//         statusElement.style.display = 'flex';
+//         statusElement.style.justifyContent = 'center';
+//         statusElement.style.backgroundColor = 'green';
+//         statusElement.style.color = 'black';
+//         statusElement.style.border = '2px solid darkorange';
 
-        if (data.status === 'success') {
-            sentimentScriptRun = true;
-        } else if (data.status === 'error') {
-            document.getElementById('run-sentimentScript-btn').disabled = false;
-            document.getElementById('sentimentScript-status').style.backgroundColor = 'orange';
-        }
-        enablePage();
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('spinner').style.display = 'none';
-        document.getElementById('sentimentScript-status').innerText = "An error occurred.";
-        document.getElementById('run-sentimentScript-btn').disabled = false;
-        document.getElementById('sentimentScript-status').style.backgroundColor = 'red';
-        enablePage();
-    });
-}
+//         if (data.status === 'success') {
+//             sentimentScriptRun = true;
+//         } else if (data.status === 'error') {
+//             document.getElementById('run-sentimentScript-btn').disabled = false;
+//             document.getElementById('sentimentScript-status').style.backgroundColor = 'orange';
+//         }
+//         enablePage();
+//     })
+//     .catch(error => {
+//         console.error('Error:', error);
+//         document.getElementById('spinner').style.display = 'none';
+//         document.getElementById('sentimentScript-status').innerText = "An error occurred.";
+//         document.getElementById('run-sentimentScript-btn').disabled = false;
+//         document.getElementById('sentimentScript-status').style.backgroundColor = 'red';
+//         enablePage();
+//     });
+// }
 
 // Warn user if script is running and they try to close/refresh
 window.onbeforeunload = function () {

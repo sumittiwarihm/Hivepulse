@@ -1,7 +1,6 @@
 
 
 #categorization Script--------------------------------------------------------------------------------------------------------------------------------------------
-
 from sentence_transformers import SentenceTransformer, util
 # Load the pre-trained Sentence-BERT model
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
