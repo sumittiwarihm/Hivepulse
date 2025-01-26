@@ -6,8 +6,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Sentiment Analysis</title>
     <link rel="stylesheet" href="{% static 'css/sentimentResult.css' %}">
+    <style>
+        /* ===================== Loader Styles ===================== */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none; /* Hidden by default */
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #264653;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===================== Responsive Navbar Adjustments ===================== */
+        /* Optional: If your existing CSS has navbar styles, ensure they are responsive.
+           Otherwise, you can add media queries here as needed. */
+
+        /* Example Responsive Adjustments */
+        @media (max-width: 768px) {
+            .title {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .go-home a {
+                font-size: 16px;
+                padding: 6px 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            /* Adjust table for smaller screens */
+            .table-container {
+                overflow-x: auto;
+            }
+
+            table {
+                width: 100%;
+                min-width: 800px; /* Adjust as needed */
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Loader Overlay -->
+    <div class="loader-overlay" id="loader">
+        <div class="loader"></div>
+    </div>
+
     <div class="title">
         <div class="go-home">
             <a href="{% url 'home' %}">Home</a>
@@ -30,7 +96,7 @@
                 <!-- Dynamic input field will appear here based on selection -->
             </div>
 
-            <button type="submit">Get Sentiment Results</button>
+            <button type="submit" id="submitButton">Get Sentiment Results</button>
         </form>
 
         <!-- Download button will be dynamically inserted here -->
@@ -103,10 +169,15 @@
         document.getElementById('sentimentForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent the default form submission
 
+            // Show loader and disable buttons
+            showLoader();
+            disableButtons();
+
             // Hide previous results and error messages
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('downloadSection').style.display = 'none';
             document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('resultsTable').querySelector('tbody').innerHTML = '';
 
             // Get form data
             const platform = document.getElementById('platform').value;
@@ -120,14 +191,18 @@
             };
             if (!sessionId) {
                 alert("Session ID is required!");
+                hideLoader();
+                enableButtons();
                 return;
             }
             const token = localStorage.getItem('access');
-         if (!token) {
-            alert('No access token found. Please log in again.');
-            window.location.href = '/login-page/';
-              return;
-           }
+            if (!token) {
+                alert('No access token found. Please log in again.');
+                window.location.href = '/login-page/';
+                hideLoader();
+                enableButtons();
+                return;
+            }
 
             // Send POST request to the API endpoint
             fetch('{% url "product_sentiment_view" %}', {
@@ -150,10 +225,16 @@
                 } else {
                     showError('An unexpected error occurred.');
                 }
+                // Hide loader and enable buttons
+                hideLoader();
+                enableButtons();
             })
             .catch(error => {
                 showError('Failed to fetch data from the server.');
                 console.error('Error:', error);
+                // Hide loader and enable buttons
+                hideLoader();
+                enableButtons();
             });
         });
 
@@ -214,6 +295,38 @@
                       .replace(/>/g, "&gt;")
                       .replace(/"/g, "&quot;")
                       .replace(/'/g, "&#039;");
+        }
+
+        /* ===================== Loader and Button Control ===================== */
+
+        // Function to show the loader
+        function showLoader() {
+            document.getElementById('loader').style.display = 'flex';
+        }
+
+        // Function to hide the loader
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        // Function to disable all buttons
+        function disableButtons() {
+            const buttons = document.querySelectorAll('button, a.download-btn');
+            buttons.forEach(button => {
+                button.disabled = true;
+                button.style.pointerEvents = 'none';
+                button.style.opacity = '0.6';
+            });
+        }
+
+        // Function to enable all buttons
+        function enableButtons() {
+            const buttons = document.querySelectorAll('button, a.download-btn');
+            buttons.forEach(button => {
+                button.disabled = false;
+                button.style.pointerEvents = 'auto';
+                button.style.opacity = '1';
+            });
         }
     </script>
 </body>

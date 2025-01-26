@@ -4,7 +4,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils import timezone
 from django.contrib.auth.models import User
 class amazonProduct(models.Model):
-  
     id = models.AutoField(primary_key=True)
     Asin = models.CharField(max_length=50)
     Brand = models.CharField(max_length=500)
@@ -59,7 +58,7 @@ class review(models.Model):
 
 class sentimentResult(models.Model):
     id = models.AutoField(primary_key=True)
-    review = models.ForeignKey('review', on_delete=models.CASCADE, null=False, blank=False)
+    review = models.OneToOneField('review', on_delete=models.CASCADE, null=False, blank=False)
     positiveScore = models.FloatField(default=0)  
     neutralScore = models.FloatField(default=0)  
     negativeScore = models.FloatField(default=0)
@@ -67,20 +66,20 @@ class sentimentResult(models.Model):
     sessionId = models.CharField(max_length=100) 
     estimatedResult= models.CharField(max_length=50 ,default='')  # it is not nesccesary to store because it can be computed on the fly
 
-class TaskStatus(models.Model):
-    class Status(models.TextChoices):
-         PENDING='pending', 'Pending'
-         PROCESSING='processing', 'Processing',
-         COMPLETED= 'completed', 'Completed',
-         FAILED= 'failed','Failed'
-    user = models.CharField(max_length=255)  
-    session_id = models.CharField(max_length=255)  
-    scrapping_status = models.CharField(max_length=10, choices=Status.choices)
-    sentiment_status=models.CharField(max_length=20,choices=Status.choices)
-    class Meta:
-        unique_together = ('user', 'session_id')  
-    def __str__(self):
-        return f"{self.user} - {self.session_id}: Scrapping({self.scrapping_status}), Sentiment({self.sentiment_status})"
+# class TaskStatus(models.Model):
+#     class Status(models.TextChoices):
+#          PENDING='pending', 'Pending'
+#          PROCESSING='processing', 'Processing',
+#          COMPLETED= 'completed', 'Completed',
+#          FAILED= 'failed','Failed'
+#     user = models.CharField(max_length=255)  
+#     session_id = models.CharField(max_length=255)  
+#     scrapping_status = models.CharField(max_length=10, choices=Status.choices)
+#     sentiment_status=models.CharField(max_length=20,choices=Status.choices)
+#     class Meta:
+#         unique_together = ('user', 'session_id')  
+#     def __str__(self):
+#         return f"{self.user} - {self.session_id}: Scrapping({self.scrapping_status}), Sentiment({self.sentiment_status})"
 
 
 

@@ -145,7 +145,6 @@ async function uploadFile() {
         window.location.href = '/login-page/';
         return;
     }
-    
     const formData = new FormData(document.getElementById('uploadForm'));
     document.getElementById('spinner').style.display = 'block';
     disablePage();
@@ -245,18 +244,14 @@ function runScrappingScript() {
     .then(data => {
         document.getElementById('spinner').style.display = 'none';
         const statusElement = document.getElementById('scrappingScript-status');
-        statusElement.innerText = data.message;
-        statusElement.style.display = 'flex';
-        statusElement.style.justifyContent = 'center';
-        statusElement.style.backgroundColor = 'orange';
-        statusElement.style.color = 'black';
-        statusElement.style.border = '2px solid darkorange';
+        statusElement.textContent = data.message;
+        statusElement.style.display = 'block';
         if (data.status === 'success') {
             scrapingScriptRun = true;
             sentimentScriptRun=true;
         } else if (data.status === 'error') {
             document.getElementById('run-scrappingScript-btn').disabled = false;
-            document.getElementById('scrappingScript-status').style.backgroundColor = 'orange';
+            document.getElementById('scrappingScript-status').style.backgroundColor = 'red';
         }
         enablePage();
     })

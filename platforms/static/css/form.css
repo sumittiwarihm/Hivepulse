@@ -326,7 +326,17 @@ input[type="text"] {
     width: 100%;
 }
 #scrappingScript-status{
-    width: 30%;
-    
+    width: 20%;
+    justify-items: center;
 }
+#scrappingScript-status {
+    margin: 10px auto 0 auto;     
+    text-align: center;           
+    width: 80%;                  
+    max-width: 400px;             
+    color: green;               
+    font-size: 16px;              
+    display: none; 
+}
+
 

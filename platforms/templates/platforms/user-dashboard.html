@@ -282,8 +282,8 @@ body {
     </div>
 
     <script>
-        const download = "{% url 'getDataForUserDashboard' %}";
 
+        const download = "{% url 'getDataForUserDashboard' %}";
         document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem('access');
             const dashboardContainer = document.getElementById('dashboard-container');
@@ -300,14 +300,13 @@ body {
 
             spinner.style.display = 'block';
             const user = localStorage.getItem('username');
-            
             fetch(download, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ user: user })
+                body: JSON.stringify({ user: user }) 
             })
             .then((response) => {
                 spinner.style.display = 'none';

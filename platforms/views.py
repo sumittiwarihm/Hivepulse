@@ -183,8 +183,12 @@ class runAmazonReviewScrappingScript(APIView):
         sessionId = data.get('sessionId')
         username = request.user.username
         try:
-            message = fetch_amazon_reviews.delay(sessionId=sessionId, username=username) 
-            return JsonResponse({'status': 'success', 'message': "request has been submitted"})
+            exists = amazonProduct.objects.filter(sessionId=sessionId).exists() 
+            if exists:
+                message = fetch_amazon_reviews.delay(sessionId=sessionId, username=username) 
+                return JsonResponse({'status': 'success', 'message': "Task Submitted Successfully"})
+            else:
+                return JsonResponse({'status': 'error', 'message': "No entry found for this seesionId"})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
@@ -292,8 +296,12 @@ class runFlipkartReviewScrappingScript(APIView):
         sessionId = data.get('sessionId')
         username = request.user.username
         try:
-            fetch_flipkart_reviews.delay(sessionId=sessionId, username=username)
-            return JsonResponse({'status': 'success', 'message':"Task Submitted Successfully"})
+            exist=flipkartProduct.objects.filter(sessionId=sessionId).exists()
+            if(exist):
+                fetch_flipkart_reviews.delay(sessionId=sessionId, username=username)
+                return JsonResponse({'status': 'success', 'message':"Task Submitted Successfully"})
+            else:
+                return JsonResponse({'status': 'error', 'message':"No entry found for this seessionId"})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
@@ -395,8 +403,12 @@ class runPlaystoreReviewScrappingScript(APIView):
             sessionId = data.get('sessionId')
             username = request.user.username
             try:
-                message = fetch_playstore_reviews.delay(sessionId=sessionId, username=username)
-                return JsonResponse({'status': 'success', 'message': "request submitted successfully"})
+                exist=playstoreProduct.objects.filter(sessionId=sessionId).exists()
+                if(exist):
+                    message = fetch_playstore_reviews.delay(sessionId=sessionId, username=username)
+                    return JsonResponse({'status': 'success', 'message': "Task Submitted Successfully"})
+                else:
+                    return JsonResponse({'status': 'error', 'message': "No entry found for this sessionId"})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': str(e)})
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
@@ -545,18 +557,17 @@ def product_sentiment_view(request):
             reviews_queryset = review.objects.filter(content_type=content_type, object_id=product.id)
 
             for rev in reviews_queryset:
-                sentiment_results = rev.sentimentresult_set.all()
-                for sentiment in sentiment_results:
-                    results.append({
-                        'product_id': product_id,
-                        'brand': product_brand,
-                        'review_content': rev.reviewContent,
-                        'sentiment_result': sentiment.estimatedResult,
-                        'rating': rev.rating,
-                        'positive_score': round(sentiment.positiveScore, 3),
-                        'neutral_score': round(sentiment.neutralScore, 3),
-                        'negative_score': round(sentiment.negativeScore, 3),
-                    })
+                sentiment = sentimentResult.objects.filter(review=rev).first()
+                results.append({
+                    'product_id': product_id,
+                    'brand': product_brand,
+                    'review_content': rev.reviewContent,
+                    'sentiment_result': sentiment.estimatedResult,
+                    'rating': rev.rating,
+                    'positive_score': round(sentiment.positiveScore, 3),
+                    'neutral_score': round(sentiment.neutralScore, 3),
+                    'negative_score': round(sentiment.negativeScore, 3),
+                })
 
         if not results:
             return JsonResponse({'error': f"No sentiment results found for session ID: {session_id}."}, status=404)
@@ -600,18 +611,17 @@ def download_excel(request):
             )
 
             for rev in reviews_queryset:
-                sentiment_results = rev.sentimentresult_set.all()
-                for sentiment in sentiment_results:
-                    data.append({
-                        'ID': product_id,
-                        'Brand': product_Brand,
-                        'Comment': rev.reviewContent,
-                        'Sentiment Result': sentiment.estimatedResult,
-                        'Rating': rev.rating,
-                        'Positive Score': round(sentiment.positiveScore, 3),
-                        'Neutral Score': round(sentiment.neutralScore, 3),
-                        'Negative Score': round(sentiment.negativeScore, 3),
-                    })
+                sentiment = sentimentResult.objects.filter(review=rev).first()
+                data.append({
+                    'ID': product_id,
+                    'Brand': product_Brand,
+                    'Comment': rev.reviewContent,
+                    'Sentiment Result': sentiment.estimatedResult,
+                    'Rating': rev.rating,
+                    'Positive Score': round(sentiment.positiveScore, 3),
+                    'Neutral Score': round(sentiment.neutralScore, 3),
+                    'Negative Score': round(sentiment.negativeScore, 3),
+                })
 
         if data:
             df = pd.DataFrame(data)
@@ -1070,11 +1080,10 @@ def user_dashboard(request):
 @csrf_exempt
 # @login_required  # Ensure the user is logged in
 def getDataForUserDashboard(request):
-    # data = json.loads(request.body)
-    user="sumit"
+    data = json.loads(request.body)
+    user=data["user"]
     if not user:
         return JsonResponse({'status': 'error', 'message': 'User not provided'}, status=400)
-
     # Query data from all three models for the given user
     playstore_products = playstoreProduct.objects.filter(user=user)
     flipkart_products = flipkartProduct.objects.filter(user=user)
@@ -1111,93 +1120,77 @@ def getDataForUserDashboard(request):
     # Return the data as JSON
     return JsonResponse(response_data)
 
-
-import os
-import zipfile
-from django.http import JsonResponse, HttpResponse
-from wordcloud import WordCloud
-# Directory to store word cloud images
-CLOUD_DIR = os.path.join('static', 'wordclouds')
-
-# Ensure the directory exists
-if not os.path.exists(CLOUD_DIR):
-    os.makedirs(CLOUD_DIR)
-
-# Function to generate the JSON structure
-def get_review_data():
-    return {
-        "sessionId": "12345",
-        "titles": {
-            "title1": {
-                "positive": ["this product is very good"],
-                "negative": ["not worth the price"],
-                "neutral": ["average experience"]
-            },
-            "title2": {
-                "positive": ["great quality"],
-                "negative": ["poor packaging"],
-                "neutral": ["decent service"]
-            }
-        }
-    }
-
-# Function to clean up old word clouds
-def delete_existing_wordclouds():
-    for file in os.listdir(CLOUD_DIR):
-        if file.endswith('.png') or file.endswith('.zip'):
-            os.remove(os.path.join(CLOUD_DIR, file))
-
-# View to generate and serve word clouds
-@csrf_exempt
-def generate_word_clouds(request):
-    # Clean up old files before processing new request
-    delete_existing_wordclouds()
-    data = get_review_data()
-    session_id = data["sessionId"]
-    titles = data["titles"]
-    image_urls = []
-    for title, sentiments in titles.items():
-        for sentiment, reviews in sentiments.items():
-            text = " ".join(reviews)
-
-            # Generate word cloud
-            wordcloud = WordCloud(width=800, height=400, background_color="white").generate(text)
-
-            # Save the image
-            filename = f"{session_id}_{title}_{sentiment}.png"
-            filepath = os.path.join(CLOUD_DIR, filename)
-            wordcloud.to_file(filepath)
-
-            # Add URL for frontend display
-            image_urls.append(f"/static/wordclouds/{filename}")
-
-    return JsonResponse({"images": image_urls})
-
-# View to download all word clouds as a ZIP and delete them after serving
-def download_word_clouds(request):
-    data = get_review_data()
-    session_id = data["sessionId"]
-
-    zip_filename = f"wordclouds_{session_id}.zip"
-    zip_filepath = os.path.join(CLOUD_DIR, zip_filename)
-
-    # Create ZIP file with generated word clouds
-    with zipfile.ZipFile(zip_filepath, 'w') as zipf:
-        for file in os.listdir(CLOUD_DIR):
-            if file.startswith(session_id) and file.endswith('.png'):
-                zipf.write(os.path.join(CLOUD_DIR, file), file)
-
-    # Serve the ZIP file
-    with open(zip_filepath, 'rb') as zip_file:
-        response = HttpResponse(zip_file.read(), content_type='application/zip')
-        response['Content-Disposition'] = f'attachment; filename={zip_filename}'
-
-    # Delete the ZIP file and images after serving
-    # delete_existing_wordclouds()
-    return response
 @csrf_exempt
 def renderWordCloud(request):
     return render(request, 'platforms/wordcloud.html')
+# @csrf_exempt
+# def dataForWordCloud(request):
+#     # in request we will get username, sessionId
+#     user=request.username
+#     sessionId=request.sessionId
+#     # we will get all the sentiment from this 
+#     # from the sentiment pointing to the review from there we will get review
+#     # now from review i will get reviewContent and 
+#     # from the content type of review i will get platform 
+#     # and in the objectid will tell the row of data in platform 
+#     # now i will make this 
+#     # now from these data i will make json response and send 
+#     #review
+#     #sentiment
+#     #platform
+import nltk
+from nltk.corpus import stopwords
+def remove_stopwords(text):
+    # print("hello")
+    stop_words = set(stopwords.words('english'))
+    words = text.split()
+    filtered_words = [word for word in words if word.lower() not in stop_words]
+    return ' '.join(filtered_words)
+from django.http import JsonResponse
+from django.apps import apps
+from .models import review, sentimentResult
+@csrf_exempt
+def getWordCloudData(request):
+    data=json.loads(request.body)
+    print(data)
+    platform=data["platform"]
+    user=data["user"]
+    sessionId=data["sessionId"]
+    # Map platform names to their respective models
+    platform_models = {
+        'amazon': 'amazonProduct',
+        'flipkart': 'flipkartProduct',
+        'playstore': 'playstoreProduct',
+    }
+    
+    if platform not in platform_models:
+        return JsonResponse({"error": "Invalid platform"}, status=400)
+    
+    # Get the appropriate model dynamically
+    model = apps.get_model('platforms', platform_models[platform])
+    
+    # Fetch all products from the selected platform
+    products = model.objects.filter(sessionId=sessionId ,user=user).all()
+    result = {"titles": {}}
+    for product in products:
+        brand = product.Brand
+        result["titles"].setdefault(brand, {"positive": [], "negative": [], "neutral": []})
+        # Fetch related reviews using generic relations
+        reviews = review.objects.filter(content_type__model=model._meta.model_name, object_id=product.id)
+        for rev in reviews:
+            sentiment = sentimentResult.objects.filter(review=rev).first()
+            content=rev.reviewContent
+            content=remove_stopwords(content)
+            if sentiment:
+                if sentiment.estimatedResult.lower() == "positive":
+                    result["titles"][brand]["positive"].append(content)
+                elif sentiment.estimatedResult.lower() == "negative":
+                    result["titles"][brand]["negative"].append(content)
+                else:
+                    result["titles"][brand]["neutral"].append(content)
+    return JsonResponse(result, safe=False)
+
+   
 
 
 

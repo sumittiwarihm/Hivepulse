@@ -245,19 +245,15 @@ function runScrappingScript() {
     .then(data => {
         document.getElementById('spinner').style.display = 'none';
         const statusElement = document.getElementById('scrappingScript-status');
-        statusElement.innerText = data.message;
-        statusElement.style.display = 'flex';
-        statusElement.style.justifyContent = 'center';
-        statusElement.style.backgroundColor = 'orange';
-        statusElement.style.color = 'black';
-        statusElement.style.border = '2px solid darkorange';
-
+        statusElement.textContent = data.message;
+        statusElement.style.display = 'block';
         if (data.status === 'success') {
+            statusElement.style.backgroundColor = 'gree';
             scrapingScriptRun = true;
             sentimentScriptRun=true;
         } else if (data.status === 'error') {
             document.getElementById('run-scrappingScript-btn').disabled = false;
-            document.getElementById('scrappingScript-status').style.backgroundColor = 'orange';
+            document.getElementById('scrappingScript-status').style.backgroundColor = 'red';
         }
         enablePage();
     })
@@ -270,6 +266,19 @@ function runScrappingScript() {
         enablePage();
     });
 }
+
+
+// Warn user if script is running and they try to close/refresh
+window.onbeforeunload = function () {
+    if (isScriptRunning) {
+        return "Are you sure you want to refresh? Your ongoing operation will be stopped.";
+    }
+};
+
+
+
+
+
 
 // Run Sentiment Script
 // function runSentimentScript() {
@@ -340,10 +349,3 @@ function runScrappingScript() {
 //         enablePage();
 //     });
 // }
-
-// Warn user if script is running and they try to close/refresh
-window.onbeforeunload = function () {
-    if (isScriptRunning) {
-        return "Are you sure you want to refresh? Your ongoing operation will be stopped.";
-    }
-};
