@@ -207,7 +207,6 @@ class runAmazonReviewSentimentScript(APIView):
         data = json.loads(request.body)
         sessionId = data.get('sessionId')
         username = request.user.username
-
         try:
             perform_amazon_sentiment_analysis(sessionId=sessionId, username=username)
             return JsonResponse({'status': 'success', 'message': 'Amazon sentiment analysis script executed successfully.'})
@@ -415,21 +414,21 @@ class runPlaystoreReviewScrappingScript(APIView):
 
 # views.py
 
-from .utilsPlaystoreSentiment import perform_playstore_sentiment_analysis
+# from .utilsPlaystoreSentiment import perform_playstore_sentiment_analysis
 
-class runPlaystoreReviewSentimentScript(APIView):
-    def post(self, request):
-        if request.method == 'POST':
-            data = json.loads(request.body)
-            sessionId = data.get('sessionId')
-            username = request.user.username
+# class runPlaystoreReviewSentimentScript(APIView):
+#     def post(self, request):
+#         if request.method == 'POST':
+#             data = json.loads(request.body)
+#             sessionId = data.get('sessionId')
+#             username = request.user.username
 
-            try:
-                message = perform_playstore_sentiment_analysis(sessionId=sessionId, username=username)
-                return JsonResponse({'status': 'success', 'message': message})
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+#             try:
+#                 message = perform_playstore_sentiment_analysis(sessionId=sessionId, username=username)
+#                 return JsonResponse({'status': 'success', 'message': message})
+#             except Exception as e:
+#                 return JsonResponse({'status': 'error', 'message': str(e)})
+#         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
     # playstore end --------------------------------------------------------------------------------------------------------
 
@@ -543,7 +542,7 @@ def product_sentiment_view(request):
         products = model_class.objects.filter(sessionId=session_id, Status='completed')
 
         if not products.exists():
-            return JsonResponse({'error': f"No completed products found for the provided session ID: {session_id}."}, status=404)
+            return JsonResponse({'error': f"No data found for the provided session ID: {session_id}."}, status=404)
 
         # Process each product
         for product in products:
@@ -1144,18 +1143,38 @@ def remove_stopwords(text):
     # print("hello")
     stop_words = set(stopwords.words('english'))
     words = text.split()
-    filtered_words = [word for word in words if word.lower() not in stop_words]
+    filtered_words = [
+        word for word in words 
+        if word.lower() not in stop_words and len(word) > 1
+    ]
     return ' '.join(filtered_words)
 from django.http import JsonResponse
 from django.apps import apps
 from .models import review, sentimentResult
+# platforms/views.py
+
+from django.http import JsonResponse
+from django.apps import apps
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 @csrf_exempt
 def getWordCloudData(request):
-    data=json.loads(request.body)
-    print(data)
-    platform=data["platform"]
-    user=data["user"]
-    sessionId=data["sessionId"]
+    if request.method != 'POST':
+        return JsonResponse({"error": "Invalid request method. Only POST requests are allowed."}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON payload."}, status=400)
+    
+    platform = data.get("platform")
+    user = data.get("user")
+    sessionId = data.get("sessionId")
+    
+    if not all([platform, user, sessionId]):
+        return JsonResponse({"error": "Missing required fields: platform, user, sessionId."}, status=400)
+    
     # Map platform names to their respective models
     platform_models = {
         'amazon': 'amazonProduct',
@@ -1164,31 +1183,41 @@ def getWordCloudData(request):
     }
     
     if platform not in platform_models:
-        return JsonResponse({"error": "Invalid platform"}, status=400)
+        return JsonResponse({"error": "Invalid platform."}, status=400)
     
     # Get the appropriate model dynamically
-    model = apps.get_model('platforms', platform_models[platform])
+    try:
+        model = apps.get_model('platforms', platform_models[platform])
+    except LookupError:
+        return JsonResponse({"error": "Model not found for the specified platform."}, status=400)
     
     # Fetch all products from the selected platform
-    products = model.objects.filter(sessionId=sessionId ,user=user).all()
-    result = {"titles": {}}
-    for product in products:
-        brand = product.Brand
-        result["titles"].setdefault(brand, {"positive": [], "negative": [], "neutral": []})
-        # Fetch related reviews using generic relations
-        reviews = review.objects.filter(content_type__model=model._meta.model_name, object_id=product.id)
-        for rev in reviews:
-            sentiment = sentimentResult.objects.filter(review=rev).first()
-            content=rev.reviewContent
-            content=remove_stopwords(content)
-            if sentiment:
-                if sentiment.estimatedResult.lower() == "positive":
-                    result["titles"][brand]["positive"].append(content)
-                elif sentiment.estimatedResult.lower() == "negative":
-                    result["titles"][brand]["negative"].append(content)
-                else:
-                    result["titles"][brand]["neutral"].append(content)
-    return JsonResponse(result, safe=False)
+    products = model.objects.filter(sessionId=sessionId, user=user).all()
+    
+    if products.exists():
+        result = {"titles": {}}
+        for product in products:
+            brand = product.Brand
+            result["titles"].setdefault(brand, {"positive": [], "negative": [], "neutral": []})
+            # Fetch related reviews using generic relations
+            reviews = review.objects.filter(content_type__model=model._meta.model_name, object_id=product.id)
+            for rev in reviews:
+                sentiment = sentimentResult.objects.filter(review=rev).first()
+                if not rev.reviewContent:
+                    continue 
+                content = remove_stopwords(rev.reviewContent)
+                if sentiment:
+                    sentiment_result = sentiment.estimatedResult.lower()
+                    if sentiment_result == "positive":
+                        result["titles"][brand]["positive"].append(content)
+                    elif sentiment_result == "negative":
+                        result["titles"][brand]["negative"].append(content)
+                    else:
+                        result["titles"][brand]["neutral"].append(content)
+        return JsonResponse(result, safe=False)
+    else:
+        return JsonResponse({'result': "No data found for this sessionId."}, status=404)
+
 
    
 

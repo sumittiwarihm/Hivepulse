@@ -29,7 +29,7 @@ body {
 
 /* Heading */
 .container h1 {
-    color: #264653;
+    color: #282c2e;
     text-align: center;
     margin-bottom: 20px;
     font-size: 28px;
@@ -61,7 +61,7 @@ body {
 }
 
 .form-content button {
-    background-color: #2a9d8f;
+    background-color: #008CBA;
     color: #fff;
     padding: 12px 20px;
     border: none;
@@ -214,7 +214,7 @@ body {
     border-radius: 2px;
 }
 .download-button {
-    background-color: #4CAF50; /* Initial background color */
+    background-color: #008CBA;; /* Initial background color */
     color: white; /* Initial text color */
     padding: 10px 20px;
     border: none;

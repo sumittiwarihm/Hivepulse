@@ -6,262 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Cloud Analyzer</title>
     <!-- Link to your existing CSS for styling -->
-    <link rel="stylesheet" href="{% static 'css/sentimentResult.css' %}">
+    <link rel="stylesheet" href="{% static 'css/word-cloud.css' %}">
     <!-- Include D3.js and D3-Cloud for word cloud generation -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-cloud/build/d3.layout.cloud.js"></script>
     <style>
-        /* ===================== Header Styles ===================== */
-        .header {
-            background-color: #264653;
-            color: #e9c46a;
-            width: 100%;
-            padding: 20px;
-            text-align: center;
-            margin: 0;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-        }
-
-        .header .go-home a {
-            color: #e9c46a;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            padding: 8px 12px;
-            background-color: transparent;
-            border: 2px solid #e9c46a;
-            border-radius: 5px;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .header .go-home a:hover {
-            color: #fff;
-            background-color: #e9c46a;
-        }
-
-        .header .logo h2 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        /* Responsive Navbar */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                padding: 10px;
-            }
-
-            .header .logo h2 {
-                margin-bottom: 10px;
-                font-size: 20px;
-            }
-
-            .header .go-home a {
-                font-size: 16px;
-                padding: 6px 10px;
-            }
-        }
-
-        /* ===================== Body Styles ===================== */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            padding-top: 80px; /* To prevent content from being hidden behind fixed header */
-            background-color: #f5f5f5;
-        }
-
-        /* ===================== Main Container ===================== */
-        .container {
-            padding: 20px;
-            margin-top: 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* ===================== Form Styles ===================== */
-        .form-content {
-            margin-bottom: 40px; /* Increased margin for better separation */
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .form-content h1 {
-            margin-top: 0;
-            color: #264653;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-            color: #264653;
-        }
-
-        select, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button[type="submit"] {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: #264653;
-            color: #e9c46a;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #1d2b36;
-        }
-
-        .error-message {
-            color: red;
-            margin-top: 10px;
-        }
-
-        /* ===================== Word Cloud Section Styles ===================== */
-        #wordCloudSection {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 40px;
-        }
-
-        #wordCloudSection h2 {
-            color: #2c3e50;
-            margin-top: 0;
-        }
-
-        .wordcloud-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 20px;
-            justify-content: center;
-        }
-
-        .wordcloud {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px;
-            background-color: #fafafa;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            width: 320px; /* Slightly wider to accommodate download button */
-            position: relative;
-        }
-
-        .wordcloud .wordcloud-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-            color: #2c3e50;
-        }
-
-        .cloud {
-            width: 300px;
-            height: 300px;
-            margin: 0 auto;
-        }
-
-        .download-btn {
-            margin-top: 10px;
-            display: block;
-            width: 100%;
-            text-align: center;
-            padding: 8px 0;
-            background-color: #007BFF;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .download-btn:hover {
-            background-color: #0056b3;
-        }
-
-        /* ===================== Loader Styles ===================== */
-        .loader-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            display: none; /* Hidden by default */
-        }
-
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #264653;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* ===================== Responsive Adjustments ===================== */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                padding: 10px;
-            }
-
-            .header .logo h2 {
-                margin-bottom: 10px;
-                font-size: 20px;
-            }
-
-            .header .go-home a {
-                font-size: 16px;
-                padding: 6px 10px;
-            }
-
-            .wordcloud-container {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .cloud {
-                width: 100%;
-                height: 300px;
-            }
-
-            .wordcloud {
-                width: 100%;
-            }
-        }
+        
+       
     </style>
 </head>
 <body>
@@ -297,17 +48,21 @@
                     <option value="flipkart">Flipkart</option>
                     <option value="playstore">Playstore</option>
                 </select>
-
                 <div id="inputField" class="input-field">
                     <!-- Dynamic input field will appear here based on selection -->
                 </div>
-
-                <button type="submit" id="submitButton">Generate Word Cloud</button>
+                <button type="submit" id="submitButton">Generate</button>
             </form>
+            
+        </div>
+
+        <!-- Error Message Container -->
+        <div id="errorContainer">
+            <h2 id="notfound"></h2>
         </div>
 
         <!-- Word Cloud Section -->
-        <div id="wordCloudSection" style="display: none;">
+        <div id="wordCloudSection">
             <h2>Word Cloud</h2>
             <div id="app" class="wordcloud-container"></div>
         </div>
@@ -315,281 +70,315 @@
         <!-- Error message section -->
         <p id="errorMessage" class="error-message" style="display: none;"></p>
     </div>
-
-    <!-- JavaScript Section -->
-    <script>
-        // Function to show the session ID input field based on platform selection
-        function showInputField(platform) {
-            let inputField = document.getElementById('inputField');
-            inputField.innerHTML = '';
-            if (platform === 'amazon' || platform === 'flipkart' || platform === 'playstore') {
-                inputField.innerHTML = `
-                    <label for="sessionId">Enter your Session ID:</label>
-                    <input type="text" name="sessionId" id="sessionId" required>
-                `;
-            }
+   <script>
+    // Function to show the session ID input field based on platform selection
+    function showInputField(platform) {
+        let inputField = document.getElementById('inputField');
+        inputField.innerHTML = '';
+        if (['amazon', 'flipkart', 'playstore'].includes(platform)) {
+            inputField.innerHTML = `
+                <label for="sessionId">Enter your Session ID:</label>
+                <input type="text" name="sessionId" id="sessionId" required>
+            `;
         }
-
-        // Handle form submission using Fetch API
-        document.getElementById('wordCloudForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Show loader and disable buttons
-            showLoader();
-            disableButtons();
-
-            // Hide previous word clouds and error messages
-            document.getElementById('wordCloudSection').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('app').innerHTML = '';
- 
-            // Get form data
-            const platform = document.getElementById('platform').value;
-            const sessionIdElement = document.getElementById('sessionId');
-            const sessionId = sessionIdElement ? sessionIdElement.value : '';
-            const accessToken = localStorage.getItem('access');
-            const user=localStorage.getItem('username')
-            if (!accessToken) {
-                alert('No access token found. Please log in again.');
-                window.location.href = '/login-page/';
-                return;
+    }
+    
+    // Handle form submission using Fetch API
+    document.getElementById('wordCloudForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+    
+        // Show loader and disable buttons
+        
+    
+        // Hide previous word clouds and error messages
+        document.getElementById('wordCloudSection').style.display = 'none';
+        document.getElementById('errorContainer').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('app').innerHTML = '';
+        document.getElementById('notfound').textContent = ''; // Clear previous message
+    
+        // Get form data
+        const platform = document.getElementById('platform').value;
+        const sessionIdElement = document.getElementById('sessionId');
+        const sessionId = sessionIdElement ? sessionIdElement.value.trim() : '';
+        const accessToken = localStorage.getItem('access');
+        const user = localStorage.getItem('username');
+    
+        if (!accessToken) {
+            alert('No access token found. Please log in again.');
+            window.location.href = '/login-page/';
+            return;
+        }
+    
+        // Validate session ID
+        if (!sessionId) {
+            alert("Session ID is required!");
+            hideLoader();
+            enableButtons();
+            return;
+        }
+    
+        // Prepare the payload
+        const payload = {
+            platform: platform,
+            sessionId: sessionId,
+            user: user
+        };
+    
+        // Retrieve CSRF token
+        const token = getCSRFToken();
+        if (!token) {
+            alert('No CSRF token found. Please refresh the page and try again.');
+            hideLoader();
+            enableButtons();
+            return;
+        }
+        showLoader();
+        disableButtons();
+        // Send POST request to the Word Cloud API endpoint
+        fetch('{% url "getWordCloudData" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token,
+                'X-Requested-With': 'XMLHttpRequest' // Helps identify AJAX requests
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(({ status, body }) => {
+            console.log(`Response Status: ${status}`);
+            console.log(`Response Body:`, body);
+    
+            if (status === 404) {
+                console.log("404 Not Found response received.");
+                // Show the errorContainer to display the 'notfound' message
+                document.getElementById('errorContainer').style.display = 'block';
+                document.getElementById('wordCloudSection').style.display = 'none'; // Ensure word cloud section is hidden
+    
+                const notfound = document.getElementById('notfound');
+                notfound.textContent = body.result || "No data found for this sessionId.";
             }
-            // Validate session ID
-            if (!sessionId) {
-                alert("Session ID is required!");
-                hideLoader();
-                enableButtons();
-                return;
+            else if (status === 200 && body.titles && Object.keys(body.titles).length > 0) {
+                // Render the word clouds
+                renderWordClouds(body);
+                // Show the word cloud section
+                document.getElementById('wordCloudSection').style.display = 'block';
+                document.getElementById('errorContainer').style.display = 'none'; // Ensure error container is hidden
+            } else if (status === 200 && body.titles && Object.keys(body.titles).length === 0) {
+                showError('No word cloud data available.');
+                document.getElementById('wordCloudSection').style.display = 'none';
+                document.getElementById('errorContainer').style.display = 'none';
+            } else if (body.error) {
+                showError(body.error);
+                document.getElementById('wordCloudSection').style.display = 'none';
+                document.getElementById('errorContainer').style.display = 'none';
+            } else {
+                showError('An unexpected error occurred.');
+                document.getElementById('wordCloudSection').style.display = 'none';
+                document.getElementById('errorContainer').style.display = 'none';
             }
-
-            // Prepare the payload
-            const payload = {
-                platform: platform,
-                sessionId: sessionId,
-                user:user
-            };
-
-            // Retrieve CSRF token
-            const token = getCSRFToken();
-            if (!token) {
-                alert('No CSRF token found. Please refresh the page and try again.');
-                hideLoader();
-                enableButtons();
-                return;
-            }
-
-            // Send POST request to the Word Cloud API endpoint
-            fetch('{% url "getWordCloudData" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': token
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json().then(data => ({ status: response.status, body: data })))
-            .then(({ status, body }) => {
-                if (status === 200 && body.titles) {
-                    // Render the word clouds
-                    renderWordClouds(body);
-                    // Show the word cloud section
-                    document.getElementById('wordCloudSection').style.display = 'block';
-                } else if (body.error) {
-                    showError(body.error);
-                } else {
-                    showError('An unexpected error occurred.');
-                }
-                // Hide loader and enable buttons
-                hideLoader();
-                enableButtons();
-            })
-            .catch(error => {
-                showError('Failed to fetch data from the server.');
-                console.error('Error:', error);
-                // Hide loader and enable buttons
-                hideLoader();
-                enableButtons();
-            });
+            // Hide loader and enable buttons
+            hideLoader();
+            enableButtons();
+        })
+        .catch(error => {
+            showError('Failed to fetch data from the server.');
+            console.error('Error:', error);
+            // Hide loader and enable buttons
+            hideLoader();
+            enableButtons();
         });
-
-        // Function to display error messages
-        function showError(message) {
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
-
-        // Function to get CSRF token from cookies
-        function getCSRFToken() {
-            const name = 'csrftoken';
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    return decodeURIComponent(cookie.substring(name.length + 1));
-                }
-            }
-            return '';
-        }
-
-        // Function to escape HTML to prevent XSS
-        function escapeHTML(str) {
-            if (typeof str !== 'string') return str;
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
-        }
-
-        /* ===================== Word Cloud Functionality ===================== */
-
-        // Preprocess data into word-frequency format
-        function preprocessText(sentences) {
-            const wordMap = {};
-            sentences.join(' ') // Combine all sentences into a single string
-                .split(/\s+/)  // Split into individual words
-                .forEach(word => {
-                    word = word.toLowerCase().replace(/[^a-z]/g, ''); // Normalize words
-                    if (word) wordMap[word] = (wordMap[word] || 0) + 1;
-                });
-            return Object.entries(wordMap).map(([text, size]) => ({ text, size }));
-        }
-
-        // Generate word cloud using D3.js
-        function generateWordCloud(words, container, downloadButton) {
-            const width = 300;
-            const height = 300;
-
-            const layout = d3.layout.cloud()
-                .size([width, height])
-                .words(words)
-                .padding(5)
-                .rotate(() => ~~(Math.random() * 2) * 90)
-                .fontSize(d => Math.max(10, d.size * 5)) // Ensure minimum font size
-                .on("end", draw);
-
-            layout.start();
-
-            function draw(words) {
-                const svg = d3.select(container)
-                    .append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                    .append("g")
-                    .attr("transform", `translate(${width / 2},${height / 2})`)
-                    .selectAll("text")
-                    .data(words)
-                    .enter()
-                    .append("text")
-                    .style("font-size", d => d.size + "px")
-                    .style("fill", () => `hsl(${Math.random() * 360}, 70%, 50%)`)
-                    .attr("text-anchor", "middle")
-                    .attr("transform", d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
-                    .text(d => d.text);
-
-                // Add download functionality
-                const svgElement = container.querySelector("svg");
-                downloadButton.addEventListener("click", () => downloadSVGAsImage(svgElement, "wordcloud.png"));
+    });
+    
+    // Function to display error messages
+    function showError(message) {
+        const errorMessage = document.getElementById('errorMessage');
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+    }
+    
+    // Function to get CSRF token from cookies
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                return decodeURIComponent(cookie.substring(name.length + 1));
             }
         }
-
-        // Convert SVG to image and download
-        function downloadSVGAsImage(svg, filename) {
-            const svgData = new XMLSerializer().serializeToString(svg);
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            const img = new Image();
-            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-            const url = URL.createObjectURL(svgBlob);
-
-            canvas.width = svg.getAttribute("width");
-            canvas.height = svg.getAttribute("height");
-
-            img.onload = function () {
-                ctx.drawImage(img, 0, 0);
-                URL.revokeObjectURL(url);
-
-                // Create download link
-                const link = document.createElement("a");
-                link.download = filename;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            };
-            img.src = url;
-        }
-
-        // Main function to process and render word clouds
-        function renderWordClouds(data) {
-            const container = document.getElementById('app');
-            const titles = data.titles;
-
-            // Clear any existing word clouds
-            container.innerHTML = '';
-
-            for (const [title, categories] of Object.entries(titles)) {
-                for (const [category, sentences] of Object.entries(categories)) {
-                    const words = preprocessText(sentences);
-
-                    // Create container for each word cloud
-                    const cloudContainer = document.createElement('div');
-                    cloudContainer.className = 'wordcloud';
-
-                    // Add title
-                    const titleDiv = document.createElement('div');
-                    titleDiv.className = 'wordcloud-title';
-                    titleDiv.innerText = `${title} (${category})`;
-                    cloudContainer.appendChild(titleDiv);
-
-                    // Add cloud
-                    const cloudDiv = document.createElement('div');
-                    cloudDiv.className = 'cloud';
-                    cloudContainer.appendChild(cloudDiv);
-
-                    // Add download button
-                    const downloadButton = document.createElement('a');
-                    downloadButton.className = 'download-btn';
-                    downloadButton.innerText = "Download Word Cloud";
-                    cloudContainer.appendChild(downloadButton);
-
-                    // Append container and generate cloud
-                    container.appendChild(cloudContainer);
-                    generateWordCloud(words, cloudDiv, downloadButton);
-                }
-            }
-        }
-
-        /* ===================== Loader and Button Control ===================== */
-
-        // Function to show the loader
-        function showLoader() {
-            document.getElementById('loader').style.display = 'flex';
-        }
-
-        // Function to hide the loader
-        function hideLoader() {
-            document.getElementById('loader').style.display = 'none';
-        }
-
-        // Function to disable all buttons
-        function disableButtons() {
-            const buttons = document.querySelectorAll('button, a.download-btn');
-            buttons.forEach(button => {
-                button.disabled = true;
-                button.style.pointerEvents = 'none';
-                button.style.opacity = '0.6';
+        return '';
+    }
+    
+    // Function to escape HTML to prevent XSS (if needed elsewhere)
+    function escapeHTML(str) {
+        if (typeof str !== 'string') return str;
+        return str.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+    }
+    
+    /* ===================== Word Cloud Functionality ===================== */
+    
+    // Preprocess data into word-frequency format
+    function preprocessText(sentences) {
+        const wordMap = {};
+        sentences.join(' ') // Combine all sentences into a single string
+            .split(/\s+/)  // Split into individual words
+            .forEach(word => {
+                word = word.toLowerCase().replace(/[^a-z]/g, ''); // Normalize words
+                if (word) wordMap[word] = (wordMap[word] || 0) + 1;
+            });
+        return Object.entries(wordMap).map(([text, size]) => ({ text, size }));
+    }
+    
+    // Generate word cloud using D3.js
+    function generateWordCloud(words, container, downloadButton) {
+        const width = 300;
+        const height = 300;
+    
+        const layout = d3.layout.cloud()
+            .size([width, height])
+            .words(words)
+            .padding(5)
+            .rotate(() => ~~(Math.random() * 2) * 90)
+            .fontSize(d => Math.max(10, d.size * 5)) // Ensure minimum font size
+            .on("end", draw);
+    
+        layout.start();
+    
+        function draw(words) {
+            const svg = d3.select(container)
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${width / 2},${height / 2})`)
+                .selectAll("text")
+                .data(words)
+                .enter()
+                .append("text")
+                .style("font-size", d => d.size + "px")
+                .style("fill", () => `hsl(${Math.random() * 360}, 70%, 50%)`)
+                .attr("text-anchor", "middle")
+                .attr("transform", d => `translate(${d.x},${d.y})rotate(${d.rotate})`)
+                .text(d => d.text); // Removed escapeHTML
+    
+            // Add download functionality
+            const svgElement = container.querySelector("svg");
+            downloadButton.addEventListener("click", (e) => {
+                e.preventDefault(); // Prevent default action
+                downloadSVGAsImage(svgElement, "wordcloud.png");
             });
         }
-
-        // Function to enable all buttons
-        function enableButtons() {
-            const buttons = document.querySelectorAll('button, a.download-btn');
-            buttons.forEach(button => {
-                button.disabled = false;
-                button.style.pointerEvents = 'auto';
-                button.style.opacity = '1';
-            });
+    }
+    
+    // Convert SVG to image and download
+    function downloadSVGAsImage(svg, filename) {
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const img = new Image();
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(svgBlob);
+    
+        canvas.width = svg.getAttribute("width");
+        canvas.height = svg.getAttribute("height");
+    
+        img.onload = function () {
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(url);
+    
+            // Create download link
+            const link = document.createElement("a");
+            link.download = filename;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        };
+        img.src = url;
+    }
+    
+    // Main function to process and render word clouds
+    function renderWordClouds(data) {
+        const container = document.getElementById('app');
+        const titles = data.titles;
+        console.log(titles)
+    
+        // Clear any existing word clouds
+        container.innerHTML = '';
+    
+        for (const [title, categories] of Object.entries(titles)) {
+            for (const [category, sentences] of Object.entries(categories)) {
+                if (!sentences || sentences.length === 0) continue; // Skip if no sentences
+    
+                const words = preprocessText(sentences);
+    
+                if (words.length === 0) continue; // Skip if no words after preprocessing
+    
+                // Create container for each word cloud
+                const cloudContainer = document.createElement('div');
+                cloudContainer.className = 'wordcloud';
+    
+                // Add title
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'wordcloud-title';
+                titleDiv.innerText = `${title.replace(/^./, char => char.toUpperCase())} (${category.toLowerCase()})`;
+                cloudContainer.appendChild(titleDiv);
+    
+                // Add cloud
+                const cloudDiv = document.createElement('div');
+                cloudDiv.className = 'cloud';
+                cloudContainer.appendChild(cloudDiv);
+    
+                // Add download button
+                const downloadButton = document.createElement('a');
+                downloadButton.className = 'download-btn';
+                downloadButton.innerText = "Download Word Cloud";
+                downloadButton.href = "#"; // Prevent default navigation
+                cloudContainer.appendChild(downloadButton);
+    
+                // Append container and generate cloud
+                container.appendChild(cloudContainer);
+                generateWordCloud(words, cloudDiv, downloadButton);
+            }
         }
-    </script>
+    }
+    
+    /* ===================== Loader and Button Control ===================== */
+    
+    // Function to show the loader
+    function showLoader() {
+        document.getElementById('loader').style.display = 'flex';
+    }
+    
+    // Function to hide the loader
+    function hideLoader() {
+        document.getElementById('loader').style.display = 'none';
+    }
+    
+    // Function to disable all buttons
+    function disableButtons() {
+        const buttons = document.querySelectorAll('button, a.download-btn');
+        buttons.forEach(button => {
+            button.disabled = true;
+            button.style.pointerEvents = 'none';
+            button.style.opacity = '0.6';
+        });
+    }
+    
+    // Function to enable all buttons
+    function enableButtons() {
+        const buttons = document.querySelectorAll('button, a.download-btn');
+        buttons.forEach(button => {
+            button.disabled = false;
+            button.style.pointerEvents = 'auto';
+            button.style.opacity = '1';
+        });
+    }
+    
+</script>
 </body>
 </html>
