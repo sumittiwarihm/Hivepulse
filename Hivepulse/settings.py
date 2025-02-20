@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'platforms',
+    "authentication",
 ]
 
 # RQ_QUEUES = {

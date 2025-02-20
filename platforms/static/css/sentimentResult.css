@@ -52,7 +52,7 @@ body {
 .form-content select, 
 .form-content input[type="text"] {
     padding: 10px;
-    width: 100%;
+    width: 100vw;
     max-width: 400px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -230,4 +230,196 @@ body {
     background-color: #e9c46a;
     color: #333; /* Darker text color on hover */
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+ /* ===================== Header Styles ===================== */
+ .header {
+    background-color: #264653;
+    color: #e9c46a;
+    width: 100%;
+    padding: 20px;
+    text-align: center;
+    margin: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.header .go-home a {
+    color: #e9c46a;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 8px 12px;
+    background-color: transparent;
+    border: 2px solid #e9c46a;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.header .go-home a:hover {
+    color: #fff;
+    background-color: #e9c46a;
+}
+
+.header .logo h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+/* Responsive Navbar */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .header .logo h2 {
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+
+    .header .go-home a {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+}
+
+/* ===================== Body Styles ===================== */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    padding-top: 80px; /* To prevent content from being hidden behind fixed header */
+    background-color: #f5f5f5;
+}
+
+/* ===================== Main Container ===================== */
+.container {
+    padding: 20px;
+    margin-top: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ===================== Form Styles ===================== */
+.form-content {
+    margin-bottom: 40px; /* Increased margin for better separation */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.form-content h1 {
+    margin-top: 0;
+    color: #264653;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #264653;
+}
+
+select, input[type="text"] {
+    
+    width: 100vw;
+    max-width: 400px;
+    padding: 10px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button[type="submit"] {
+    /* margin-left: 150px; */
+    margin-top: 20px;
+    padding: 12px 24px;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #e76f51;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+}
+
+
+/* ===================== Loader Styles ===================== */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    display: none; /* Hidden by default */
+}
+
+.loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #264653;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===================== Responsive Adjustments ===================== */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .header .logo h2 {
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+
+    .header .go-home a {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+
+    .wordcloud-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cloud {
+        width: 100%;
+        height: 300px;
+    }
+
+    .wordcloud {
+        width: 100%;
+    }
 }

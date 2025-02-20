@@ -330,6 +330,7 @@ label {
 }
 
 select, input[type="text"] {
+    
     width: 100vw;
     max-width: 400px;
     padding: 10px;
@@ -340,6 +341,7 @@ select, input[type="text"] {
 }
 
 button[type="submit"] {
+    margin-left: 150px;
     margin-top: 20px;
     padding: 12px 24px;
     background-color: #008CBA;

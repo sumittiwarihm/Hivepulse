@@ -3,6 +3,7 @@ from . import views
 urlpatterns = [
     path('' , views.home , name='home'),
     path('login/', views.login, name='login'),
+    # path('accounts/login/', views.loginPage, name='loginPage'),
     path('login-page/', views.loginPage, name='loginPage'),
     path('logout/', views.logout_view, name='logoutPage'),
     path('downloadAmazonTemplate/', views.DownloadAmazonExcelTemplateView.as_view(), name='downloadAmazonExcelTemplate'),
@@ -34,7 +35,7 @@ urlpatterns = [
     path('RawReport/',views.GetRawPage,name="rawReportPage") ,
     # path('taskQueue/',views.sheduleTask,name="taskQueue")
     # path('factorial/<int:number>/', views.enqueue_factorial, name='enqueue_factorial'),
-    path('enqueue/', views.enqueue_task, name='enqueue_task'),
+    # path('enqueue/', views.enqueue_task, name='enqueue_task'),
     path("getDataForUserDashboard/",views.getDataForUserDashboard,name="getDataForUserDashboard"),
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
     path('renderWordCloud/',views.renderWordCloud ,name='renderWordCloud'),

@@ -10,6 +10,11 @@ def fibonacci(n):
     if n <= 1:
         return n
     return fibonacci(n - 1) + fibonacci(n - 2)
+def convert_date(date_str):
+    dt = dateparser.parse(date_str)
+    if dt:
+        return dt.date()
+    return None
 # flipkart script complete .
 from selenium import webdriver
 import logging
@@ -25,6 +30,7 @@ from bs4 import BeautifulSoup
 import re
 import time
 import datetime
+import dateparser
 from django.contrib.contenttypes.models import ContentType
 from platforms.models import flipkartProduct, review
 @app.task
@@ -77,11 +83,16 @@ def fetch_flipkart_reviews(sessionId,username):
                             rating = int(container.find('div', {'class': '_3LWZlK _1rdVr6 _1BLPMq'}).text.strip())
 
                         try:
-                            review_date_str = container.find('p', {'class': '_2NsDsF'}).text.strip()
-                            review_date = datetime.datetime.strptime(review_date_str, "%d %b, %Y").date()
+                            def exact_class(tag):
+                                return tag.name == 'p' and tag.get('class') == ['_2NsDsF']
+                            # exact_p = container.find(exact_class)
+                            review_date_str = container.find(exact_class).text.strip()
+                            logger.info(f"review_date_str: {review_date_str}")
+                            review_date = convert_date(review_date_str).strftime("%Y-%m-%d")
+                            logger.info(f"review_date: {review_date}")
+                            # review_date=review_date_str
                         except:
                             review_date = datetime.date.min
-
                         flipkart_product_instance = flipkartProduct.objects.filter(Fsn=fsn, Status='pending', user=username, sessionId=sessionId).first()
                         if flipkart_product_instance:
                             content_type = ContentType.objects.get_for_model(flipkartProduct)
@@ -93,9 +104,10 @@ def fetch_flipkart_reviews(sessionId,username):
                                 created_at=review_date or datetime.date.min,
                                 user=username,
                                 sessionId=sessionId,
-                            )
+                        )
 
                 except Exception as e:
+                    print(e)
                     break
             # flipkartProduct.objects.filter(Fsn=fsn, user=username, sessionId=sessionId).update(Status='completed')
             try:
@@ -110,7 +122,6 @@ def fetch_flipkart_reviews(sessionId,username):
         browser.quit()
     return 'Successfully fetched the review and got the sentiment and saved for Flipkart reviews'
 
-# utilsAmazonScrapping.py
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
@@ -122,7 +133,6 @@ def perform_flipkart_sentiment_analysis(sessionId, username):
     MODEL = "cardiffnlp/twitter-roberta-base-sentiment"
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
     model = AutoModelForSequenceClassification.from_pretrained(MODEL)
-
     def polarity_scores_roberta(text):
         encoded_text = tokenizer(
             text, 

@@ -1,8 +1,8 @@
 #categorization Script--------------------------------------------------------------------------------------------------------------------------------------------
 from sentence_transformers import SentenceTransformer, util
-# Load the pre-trained Sentence-BERT model
+
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-# Define a description for each category that captures its semantic meaning
+
 CATEGORY_DESCRIPTIONS1 = {
     'appExperience': 'Issues with the application design, layout, performance, and usability.',
     'price': 'Comments on the pricing, value, affordability, and costs.',
@@ -18,11 +18,11 @@ CATEGORY_DESCRIPTIONS2 = {
     'Appearance & Presentation': 'Observations on the product’s appearance, design, and presentation upon arrival.'
 }
 
-# Encode category descriptions
+
 category_embeddings1 = {category: model.encode(description) for category, description in CATEGORY_DESCRIPTIONS1.items()}
 category_embeddings2 = {category: model.encode(description) for category, description in CATEGORY_DESCRIPTIONS2.items()}
 
-# Define a priority order for categories to resolve ties if needed
+
 PRIORITY_ORDER1 = [
     'qualityOfProduct',
     'appExperience', 
@@ -50,7 +50,7 @@ def assign_category(review_text,  priority_order=PRIORITY_ORDER1):
     Returns:
         str: The assigned category.
     """
-    # Encode the review text
+   
     review_embedding = model.encode(review_text)
     
     # Calculate similarity with each category and store in a dictionary
@@ -59,14 +59,14 @@ def assign_category(review_text,  priority_order=PRIORITY_ORDER1):
         similarity = util.cos_sim(review_embedding, category_embedding).item()
         similarities[category] = similarity
 
-    # Find category with the highest similarity
+ 
     best_category = max(similarities, key=similarities.get)
     max_similarity = similarities[best_category]
 
-    # Check for any ties in similarity
+   
     tied_categories = [cat for cat, sim in similarities.items() if sim == max_similarity]
 
-    # If there's a tie, use priority order to decide the category
+   
     if len(tied_categories) > 1:
         for category in priority_order:
             if category in tied_categories:
@@ -85,23 +85,23 @@ def assign_category2(review_text, priority_order=PRIORITY_ORDER2):
     Returns:
         str: The assigned category.
     """
-    # Encode the review text
+
     review_embedding = model.encode(review_text)
     
-    # Calculate similarity with each category and store in a dictionary
+
     similarities = {}
     for category, category_embedding in category_embeddings2.items():
         similarity = util.cos_sim(review_embedding, category_embedding).item()
         similarities[category] = similarity
 
-    # Find category with the highest similarity
+
     best_category = max(similarities, key=similarities.get)
     max_similarity = similarities[best_category]
 
-    # Check for any ties in similarity
+
     tied_categories = [cat for cat, sim in similarities.items() if sim == max_similarity]
 
-    # If there's a tie, use priority order to decide the category
+ 
     if len(tied_categories) > 1:
         for category in priority_order:
             if category in tied_categories:

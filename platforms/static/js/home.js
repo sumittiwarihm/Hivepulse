@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const accessToken = localStorage.getItem('access');
     const username = localStorage.getItem('username');
-
     if (accessToken) {
         // Verify token with the server
         fetch('/api/verify-token/', {
@@ -18,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('username').style.display = 'inline-block';
                 document.getElementById('username').style.display = 'flex';
                 document.getElementById('username').style.justifyContent = 'center';
-                
                 document.getElementById('username').innerText = `Hello, ${username}`;
+                document.getElementById('dropdownMenuButton').innerText=`👤 Logout`;
             } else {
                 // Token is invalid or expired
                 throw new Error('Token invalid or expired');
@@ -51,6 +50,7 @@ document.getElementById('logoutButton').addEventListener('click', (event) => {
     document.getElementById('loginLink').style.display = 'inline-block';
     document.getElementById('logoutButton').style.display = 'none';
     document.getElementById('username').style.display = 'none';
+    document.getElementById('dropdownMenuButton').innerText=`👤 Login`;
 });
 
 

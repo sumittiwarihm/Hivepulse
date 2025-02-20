@@ -41,7 +41,7 @@ def login(request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
-        user = authenticate(username=username, password=password)
+        user = authenticate(request,username=username, password=password)
         if user is not None:
             refresh = RefreshToken.for_user(user)
             user.last_login = timezone.now()
@@ -79,7 +79,8 @@ def verify_token(request):
 
 #common code end--------------------------------------------------------------------------------
 
-
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 # redirect code start-------------------------------------------------------
 def session_input_view(request):
     return render(request, 'platforms/graph.html')
@@ -90,11 +91,11 @@ def loginPage(request):
     return render(request, 'platforms/login.html')
 
 def home(request):
-    return render (request,'platforms/home.html')
+    return render (request,'platforms/home copy.html')
 
 def amazonPage(request):
     return render (request, 'platforms/amazonForm.html')
-
+# @login_required(login_url='/login/')
 def flipkartPage(request):
     return render (request, 'platforms/flipkartForm.html')
 
@@ -223,7 +224,8 @@ class runAmazonReviewSentimentScript(APIView):
 
 
 #  flipkart start-------------------------------------------------------------------------------------------
-
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 
 class downloadFlipkartExcelTemplate(APIView):
@@ -540,7 +542,6 @@ def product_sentiment_view(request):
     try:
         # Checking if any completed products exist for the  session ID
         products = model_class.objects.filter(sessionId=session_id, Status='completed')
-
         if not products.exists():
             return JsonResponse({'error': f"No data found for the provided session ID: {session_id}."}, status=404)
 
@@ -648,7 +649,7 @@ def sessionInputAmazon(request):
     return render (request,'platforms/sessionInputAmazon.html')
 def sessionInputFlipkart(request):
     return render (request,'platforms/sessionInputFlipkart.html')
-@ login_required
+# @ login_required
 def getDataForGraph(request):
     if request.method == 'GET': 
         return JsonResponse({'error': 'wrong request method'}, status=400)
@@ -895,6 +896,7 @@ def getDataForFlipkartCategorization(request):
     try:
         body=json.loads(request.body)
         sessionId=body.get('sessionId')
+        print(sessionId)
         if not sessionId:
             return JsonResponse({'error':'sessionID is not found'},status=400)
     except json.JSONDecodeError:
@@ -913,6 +915,7 @@ def getDataForFlipkartCategorization(request):
                 product_type=ContentType.objects.get_for_model(flipkartProduct)
                 reviews=review.objects.filter(content_type=product_type,object_id=product.id)
                 for rev in reviews:
+                    # print(rev.reviewContent)
                     sentiment=sentimentResult.objects.filter(review_id=rev.id).first()
                     sentiment_result=sentiment.estimatedResult.lower() if sentiment else 'neutral'
                     category = assign_category2(rev.reviewContent)
@@ -1217,6 +1220,32 @@ def getWordCloudData(request):
         return JsonResponse(result, safe=False)
     else:
         return JsonResponse({'result': "No data found for this sessionId."}, status=404)
+    
+# def getDataForLineGraph(request):
+#     if request.method!='POST':
+#         return JsonResponse({"error":"invalid request method only Post method is allowed"} , status=405)
+#     try:
+#         data=json.load(request.body)
+#     except json.JSONDecodeError:
+#         return JsonResponse({"error":"invalid JSON payload."},status=400)
+#     platform=data.get("platform")
+#     user=data.get("user")
+#     sessionId=data.get("sessionId")
+#     if not all([platform,user,sessionId]):
+#         return JsonResponse({"error":"Missing required fields:platform ,user,sessionId"},status=400)
+#     platform_models = {
+#         'amazon': 'amazonProduct',
+#         'flipkart': 'flipkartProduct',
+#         'playstore': 'playstoreProduct',
+#     }
+#     if platform not in platform_models:
+#         return JsonResponse({"errror":"Invalid platform"},status=400)
+#     #getting the model dynamically
+#     try:
+#         model=apps.get_model('platforms',platform_models[platform])
+    
+
+
 
 
    
