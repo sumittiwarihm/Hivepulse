@@ -39,8 +39,9 @@ urlpatterns = [
     path("getDataForUserDashboard/",views.getDataForUserDashboard,name="getDataForUserDashboard"),
     path('user-dashboard/', views.user_dashboard, name='user_dashboard'),
     path('renderWordCloud/',views.renderWordCloud ,name='renderWordCloud'),
-    path('wordCloud/', views.getWordCloudData ,name='getWordCloudData')
-    
+    path('wordCloud/', views.getWordCloudData ,name='getWordCloudData'),
+    path('my-charts/', views.myChartsView, name='myChartsView'),
+    path('get-data-playstore/', views.getDataforPlaystore, name='getDataforPlaystore')   
 ]
 
 

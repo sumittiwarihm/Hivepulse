@@ -91,7 +91,7 @@ def loginPage(request):
     return render(request, 'platforms/login.html')
 
 def home(request):
-    return render (request,'platforms/home copy.html')
+    return render (request,'platforms/home.html')
 
 def amazonPage(request):
     return render (request, 'platforms/amazonForm.html')
@@ -1246,6 +1246,134 @@ def getWordCloudData(request):
     
 
 
+
+
+# get data for showing the sentiment varition over the year and also rating variation over the year
+
+# views.py
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+from collections import defaultdict
+from django.contrib.contenttypes.models import ContentType
+
+from .models import playstoreProduct, review, sentimentResult
+
+@csrf_exempt
+def myChartsView(request):
+    session_id = None
+    if request.method == 'POST':
+        session_id = request.POST.get('sessionId')
+    return render(request, 'platforms/my_charts.html', {'sessionId': session_id})
+
+@csrf_exempt
+def getDataforPlaystore(request):
+    """
+    POST body: { sessionId: <str> }
+
+    Returns JSON like:
+    {
+      "app_charts": [
+        {
+          "appId": "com.example",
+          "monthlyData": [
+            {
+              "year_month": "2023-01",
+              "avg_rating": 4.0,
+              "positive_count": 2,
+              "negative_count": 0,
+              "neutral_count": 1
+            },
+            ...
+          ]
+        },
+        ...
+      ]
+    }
+    """
+    if request.method == 'POST':
+        # 1) Parse incoming JSON
+        body_unicode = request.body.decode('utf-8')
+        data = json.loads(body_unicode)
+        session_id = data.get('sessionId')
+
+        # 2) Filter playstoreProduct by sessionId
+        products = playstoreProduct.objects.filter(sessionId=session_id)
+
+        # We'll need the content_type for playstoreProduct for matching reviews
+        product_ct = ContentType.objects.get_for_model(playstoreProduct)
+
+        # 3) Create aggregator dict: { appId: { (year,month): {...} }, ... }
+        app_aggregate = defaultdict(
+            lambda: defaultdict(
+                lambda: {
+                    'count': 0,
+                    'sum_rating': 0,
+                    'pos_count': 0,
+                    'neg_count': 0,
+                    'neu_count': 0
+                }
+            )
+        )
+
+        for product in products:
+            current_app_id = product.AppId  # e.g. "com.example"
+            # 4) Find reviews referencing this product & same sessionId
+            reviews_qs = review.objects.filter(
+                content_type=product_ct,
+                object_id=product.id,
+                sessionId=session_id
+            ).select_related('sentimentresult')  # <-- FIX: lowercase name
+
+            for rv in reviews_qs:
+                # If there's no sentimentResult or missing date, skip
+                if not hasattr(rv, 'sentimentresult') or not rv.created_at:
+                    continue
+
+                sr = rv.sentimentresult
+                dt = rv.created_at
+                year, month = dt.year, dt.month
+
+                # Accumulate rating
+                bucket = app_aggregate[current_app_id][(year, month)]
+                bucket['count'] += 1
+                bucket['sum_rating'] += rv.rating
+
+                # Tally sentiments
+                est = sr.estimatedResult.lower()
+                if est == 'positive':
+                    bucket['pos_count'] += 1
+                elif est == 'negative':
+                    bucket['neg_count'] += 1
+                elif est == 'neutral':
+                    bucket['neu_count'] += 1
+
+        # 5) Convert aggregator to JSON-friendly structure
+        app_charts = []
+        for app_id, monthly_dict in app_aggregate.items():
+            monthly_list = []
+            for (year, month), vals in sorted(monthly_dict.items()):
+                ym_str = f'{year}-{month:02d}'
+                avg_rating = (
+                    vals['sum_rating'] / vals['count']
+                    if vals['count'] else 0
+                )
+                monthly_list.append({
+                    'year_month': ym_str,
+                    'avg_rating': avg_rating,
+                    'positive_count': vals['pos_count'],
+                    'negative_count': vals['neg_count'],
+                    'neutral_count': vals['neu_count']
+                })
+            app_charts.append({
+                'appId': app_id,
+                'monthlyData': monthly_list
+            })
+
+        return JsonResponse({'app_charts': app_charts}, safe=False)
+
+    return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
 
    

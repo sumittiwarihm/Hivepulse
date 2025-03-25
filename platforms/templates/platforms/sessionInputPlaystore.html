@@ -557,7 +557,7 @@ body {
                             tooltip: { enabled: true }
                         }
                     ],
-                    title: { text: `Comparison of ${category} for Different Apps` },
+                    title: { text: `% Distribution of Sentiment For ${category} ` },
                     axes: [
                         {
                             type: 'category',
@@ -661,7 +661,7 @@ body {
                         autoSize: true,
                         data: chartData,
                         title: {
-                            text: `${capitalizeFirstLetter(sentimentType)} Sentiment for ${app.appId}`,
+                            text: `${capitalizeFirstLetter(sentimentType)} Sentiment's Distribution Across Categories for ${app.appId}`,
                             fontSize: 16,
                             fontWeight: 'bold',
                             padding: { top: 10, bottom: 10 }
@@ -707,133 +707,140 @@ body {
         }
 
         function renderTab3Charts(data) {
-            const chartContainer = document.getElementById('chartContainerTab3');
-            chartContainer.innerHTML = '';  // Clear previous charts
+    const chartContainer = document.getElementById('chartContainerTab3');
+    chartContainer.innerHTML = '';  // Clear previous charts
 
-            // Prepare data for the 100% stacked bar chart
-            const chartData = data.map(app => {
-                const total = app.totalPositive + app.totalNegative + app.totalNeutral;
-                // Avoid division by zero
-                const positivePercentage = total > 0 ? (app.totalPositive / total) * 100 : 0;
-                const negativePercentage = total > 0 ? (app.totalNegative / total) * 100 : 0;
-                const neutralPercentage = total > 0 ? (app.totalNeutral / total) * 100 : 0;
-                return {
-                    appId: app.appId,
-                    Positive: positivePercentage,
-                    Negative: negativePercentage,
-                    Neutral: neutralPercentage,
-                    total: total
-                };
-            });
+    // Prepare data for the 100% stacked bar chart
+    const chartData = data.map(app => {
+        const total = app.totalPositive + app.totalNegative + app.totalNeutral;
+        // Avoid division by zero
+        const positivePercentage = total > 0 ? (app.totalPositive / total) * 100 : 0;
+        const negativePercentage = total > 0 ? (app.totalNegative / total) * 100 : 0;
+        const neutralPercentage = total > 0 ? (app.totalNeutral / total) * 100 : 0;
+        return {
+            appId: app.appId,
+            Positive: positivePercentage,
+            Negative: negativePercentage,
+            Neutral: neutralPercentage,
+            total: total
+        };
+    });
 
-            // Create the chart
-            agCharts.AgChart.create({
-                container: chartContainer,
-                autoSize: true,
-                title: {
-                    text: 'Sentiment Analysis per App (Percentage)',
-                    fontSize: 20
+    // Create the chart
+    agCharts.AgChart.create({
+        container: chartContainer,
+        autoSize: true,
+        title: {
+            text: 'Sentiment Analysis (Percentage)',
+            fontSize: 20
+        },
+        data: chartData,
+        series: [
+            // Positive Series
+            {
+                type: 'column',
+                xKey: 'appId',
+                yKey: 'Positive',
+                yName: 'Positive',
+                stacked: true,
+                fill: '#4CAF50',
+                stroke: '#388E3C',
+                label: {
+                    enabled: true,
+                    formatter: params => {
+                        const percentage = params.yValue;
+                        return `${percentage.toFixed(1)}%`;
+                    },
+                    fontSize: 12,
+                    color: 'white'
                 },
-                data: chartData,
-                series: [
-                    // Positive Series
-                    {
-                        type: 'column',
-                        xKey: 'appId',
-                        yKey: 'Positive',
-                        yName: 'Positive',
-                        stacked: true,
-                        fill: '#4CAF50',
-                        stroke: '#388E3C',
-                        label: {
-                            enabled: true,
-                            formatter: params => {
-                                const percentage = params.yValue;
-                                return `${percentage.toFixed(1)}%`;
-                            },
-                            fontSize: 12,
-                            color: 'white'
-                        }
+                // Uncomment the line below to adjust the bar width:
+                barWidth: 20 // Adjust this value for custom bar width
+            },
+            // Negative Series
+            {
+                type: 'column',
+                xKey: 'appId',
+                yKey: 'Negative',
+                yName: 'Negative',
+                stacked: true,
+                fill: '#F44336',
+                stroke: '#D32F2F',
+                label: {
+                    enabled: true,
+                    formatter: params => {
+                        const percentage = params.yValue;
+                        return `${percentage.toFixed(1)}%`;
                     },
-                    // Negative Series
-                    {
-                        type: 'column',
-                        xKey: 'appId',
-                        yKey: 'Negative',
-                        yName: 'Negative',
-                        stacked: true,
-                        fill: '#F44336',
-                        stroke: '#D32F2F',
-                        label: {
-                            enabled: true,
-                            formatter: params => {
-                                const percentage = params.yValue;
-                                return `${percentage.toFixed(1)}%`;
-                            },
-                            fontSize: 12,
-                            color: 'white'
-                        }
-                    },
-                    // Neutral Series
-                    {
-                        type: 'column',
-                        xKey: 'appId',
-                        yKey: 'Neutral',
-                        yName: 'Neutral',
-                        stacked: true,
-                        fill: '#FFC107',
-                        stroke: '#FFA000',
-                        label: {
-                            enabled: true,
-                            formatter: params => {
-                                const percentage = params.yValue;
-                                return `${percentage.toFixed(1)}%`;
-                            },
-                            fontSize: 12,
-                            color: 'black'
-                        }
-                    }
-                ],
-                axes: [
-                    {
-                        type: 'category',
-                        position: 'bottom',
-                        title: {
-                            text: 'App ID',
-                            fontSize: 16
-                        }
-                    },
-                    {
-                        type: 'number',
-                        position: 'left',
-                        title: {
-                            text: 'Percentage of Reviews (%)',
-                            fontSize: 16
-                        },
-                        min: 0,
-                        max: 100,
-                        tick: {
-                            interval: 10,
-                            formatter: params => `${params.value}%`
-                        },
-                        label: {
-                            formatter: params => `${params.value}%`
-                        }
-                    }
-                ],
-                legend: {
-                    position: 'top'
-                },
-                tooltip: {
-                    renderer: (params) => {
-                        return {
-                            title: params.xValue,
-                            content: `${params.yName}: ${params.yValue.toFixed(1)}%`
-                        };
-                    }
+                    fontSize: 12,
+                    color: 'white'
                 }
-            });
+                // Uncomment the line below to adjust the bar width:
+                // , barWidth: 20 // Adjust this value for custom bar width
+            },
+            // Neutral Series
+            {
+                type: 'column',
+                xKey: 'appId',
+                yKey: 'Neutral',
+                yName: 'Neutral',
+                stacked: true,
+                fill: '#FFC107',
+                stroke: '#FFA000',
+                label: {
+                    enabled: true,
+                    formatter: params => {
+                        const percentage = params.yValue;
+                        return `${percentage.toFixed(1)}%`;
+                    },
+                    fontSize: 12,
+                    color: 'black'
+                }
+                // Uncomment the line below to adjust the bar width:
+                // , barWidth: 20 // Adjust this value for custom bar width
+            }
+        ],
+        axes: [
+            {
+                type: 'category',
+                position: 'bottom',
+                title: {
+                    text: 'App ID',
+                    fontSize: 16
+                }
+            },
+            {
+                type: 'number',
+                position: 'left',
+                title: {
+                    text: 'Percentage of Reviews (%)',
+                    fontSize: 16
+                },
+                min: 0,
+                max: 100,
+                tick: {
+                    interval: 10,
+                    formatter: params => `${params.value}%`
+                },
+                label: {
+                    formatter: params => `${params.value}%`
+                }
+            }
+        ],
+        legend: {
+            position: 'top'
+        },
+        tooltip: {
+            renderer: (params) => {
+                return {
+                    title: params.xValue,
+                    content: `${params.yName}: ${params.yValue.toFixed(1)}%`
+                };
+            }
         }
+    });
+}
+
 
         function showLoader() {
         document.getElementById('loader').style.display = 'flex';

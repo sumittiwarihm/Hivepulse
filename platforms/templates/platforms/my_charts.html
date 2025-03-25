@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Multiple App Charts</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+</head>
+<body>
+  <h1>Enter Session ID</h1>
+  <form method="POST" action="">
+    {% csrf_token %}
+    <label for="sessionId">Session ID:</label>
+    <input type="text" name="sessionId" id="sessionId" value="{{ sessionId|default_if_none:''}}">
+    <button type="submit">Submit</button>
+  </form>
+  <hr/>
+  {% if sessionId %}
+    <h2>Charts for Session ID: {{ sessionId }}</h2>
+    <div id="charts-container"></div>
+
+    <script>
+      const sessionId = '{{ sessionId|escapejs }}';
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      fetch('{% url "getDataforPlaystore" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ sessionId: sessionId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        const chartsContainer = document.getElementById('charts-container');
+        const appCharts = data.app_charts || [];
+
+        appCharts.forEach(appChart => {
+          const { appId, monthlyData } = appChart;
+          const chartDiv = document.createElement('div');
+          chartDiv.style.width = '800px';
+          chartDiv.style.height = '400px';
+          chartDiv.style.marginBottom = '50px';
+          chartsContainer.appendChild(chartDiv);
+          const xAxisData      = monthlyData.map(item => item.year_month);
+          const avgRatingData  = monthlyData.map(item => item.avg_rating);
+          const positiveCounts = monthlyData.map(item => item.positive_count);
+          const negativeCounts = monthlyData.map(item => item.negative_count);
+          const neutralCounts  = monthlyData.map(item => item.neutral_count);
+
+          const chartInstance = echarts.init(chartDiv);
+          const option = {
+            title: {
+              text: `App: ${appId}`,
+              left: 'center'
+            },
+            tooltip: { trigger: 'axis' },
+            legend: {
+              data: ['Positive', 'Negative', 'Neutral', 'Avg Rating'],
+              top: 30
+            },
+            grid: {
+              left: 60,
+              right: 60,
+              top: 80,
+              bottom: 60
+            },
+            toolbox: {
+              show: true,
+              feature: {
+                dataZoom: { yAxisIndex: 'none' },
+                restore: {},
+                saveAsImage: {
+                  title: 'Download'
+                }
+              }
+            },
+            xAxis: {
+              type: 'category',
+              data: xAxisData
+            },
+            yAxis: [
+              {
+                type: 'value',
+                name: 'Count',
+                
+              },
+              {
+                type: 'value',
+                name: 'Avg Rating',
+                min: 0,
+                max: 5
+              }
+            ],
+            series: [
+              {
+                name: 'Positive',
+                type: 'bar',
+                stack: 'sentiments',
+                data: positiveCounts,
+                color:'Green',
+              },
+              {
+                name: 'Negative',
+                type: 'bar',
+                stack: 'sentiments',
+                data: negativeCounts,
+                color:'red'
+              },
+              {
+                name: 'Neutral',
+                type: 'bar',
+                stack: 'sentiments',
+                data: neutralCounts,
+                color:'yellow'
+              },
+              {
+                name: 'Avg Rating',
+                type: 'line',
+                yAxisIndex: 1,
+                data: avgRatingData
+              }
+            ]
+          };
+
+          chartInstance.setOption(option);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+    </script>
+  {% endif %}
+</body>
+</html>

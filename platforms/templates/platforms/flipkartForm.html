@@ -116,11 +116,12 @@ body {
                     <h2>Run Scripts</h2>
                     <label for="scrapping-session-id">Session ID:</label>
                     <input type="text" id="scrapping-session-id" name="scrapping-session-id" placeholder="Enter Session ID">
-                    <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run</button>
-                    <p id="scrappingScript-status"></p>
+                    <!-- <button id="run-scrappingScript-btn" onclick="runScrappingScript()">Run</button>
+                    <p id="scrappingScript-status"></p> -->
                     <br>
                     <button class="btn btn-secondary" onclick="goToPreviousStep(3)">Previous</button>
-                    <button class="btn btn-success" onclick="finishProcess()">Finish</button>
+                    <button id="run-scrappingScript-btn" class="btn btn-secondary" onclick="runScrappingScript()">Run</button>
+                    <p id="scrappingScript-status"></p>
                 </div>
             </div>
         </div>
